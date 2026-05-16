@@ -1,0 +1,3662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vitalis — Healthcare Analytics</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    html, body, #root { height: 100%; margin: 0; }
+    body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+    input[type='number']::-webkit-outer-spin-button,
+    input[type='number']::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type='number'] { -moz-appearance: textfield; }
+    *:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+    .__loading {
+      display: flex; align-items: center; justify-content: center;
+      height: 100vh; font-family: system-ui, sans-serif; color: #888;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"><div class="__loading">Loading Vitalis…</div></div>
+
+  <!-- Dependencies via CDN -->
+  <script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/prop-types@15.8.1/prop-types.min.js"></script>
+  <script crossorigin src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js"></script>
+  <script crossorigin src="https://unpkg.com/framer-motion@11.5.4/dist/framer-motion.js"></script>
+  <script crossorigin src="https://unpkg.com/lucide@0.439.0/dist/umd/lucide.min.js"></script>
+
+  <script>
+    // Glue: expose hooks + libs in the global scope so the bundled (importless) code Just Works.
+    window.addEventListener('DOMContentLoaded', function () {
+      // Wait until everything is actually defined; CDN scripts are loaded with `defer` semantics
+      // because they're inline at end of body, so they should be ready by now.
+      const need = ['React', 'ReactDOM', 'Recharts', 'lucide'];
+      const missing = need.filter(function (n) { return !window[n]; });
+      // Framer Motion can be exposed as either `Motion` or `framerMotion`
+      const motionLib = window.Motion || window.framerMotion || window.FramerMotion;
+      if (missing.length || !motionLib) {
+        document.getElementById('root').innerHTML =
+          '<pre style="padding:2rem;color:red;font-family:monospace">' +
+          'Failed to load: ' + missing.join(', ') +
+          (!motionLib ? (missing.length ? ', ' : '') + 'framer-motion' : '') +
+          '\n\nIf you are offline, the page needs an internet connection on first load.' +
+          '</pre>';
+        return;
+      }
+
+      // Hooks → globals
+      const r = window.React;
+      window.useState = r.useState;
+      window.useEffect = r.useEffect;
+      window.useMemo = r.useMemo;
+      window.useRef = r.useRef;
+      window.useCallback = r.useCallback;
+      window.createContext = r.createContext;
+      window.useContext = r.useContext;
+
+      // Framer Motion → globals
+      window.motion = motionLib.motion;
+      window.AnimatePresence = motionLib.AnimatePresence;
+
+      // Recharts → globals
+      const Rc = window.Recharts;
+      ['ResponsiveContainer','BarChart','Bar','LineChart','Line','AreaChart','Area',
+       'PieChart','Pie','Cell','XAxis','YAxis','CartesianGrid','Tooltip','Legend',
+       'ComposedChart'].forEach(function (k) { window[k] = Rc[k]; });
+
+      // Lucide → React components. Each icon is `[tag, attrs, children[]]`
+      // where children is an array of `[tag, attrs]` pairs.
+      const icons = (window.lucide && window.lucide.icons) || {};
+      function makeIcon(pascalName) {
+        const node = icons[pascalName];
+        return function LucideIcon(props) {
+          const p = props || {};
+          const size = p.size == null ? 24 : p.size;
+          const color = p.color || 'currentColor';
+          const strokeWidth = p.strokeWidth == null ? 2 : p.strokeWidth;
+          const attrs = {
+            xmlns: 'http://www.w3.org/2000/svg',
+            width: size, height: size,
+            viewBox: '0 0 24 24',
+            fill: 'none', stroke: color,
+            strokeWidth: strokeWidth,
+            strokeLinecap: 'round', strokeLinejoin: 'round',
+          };
+          if (p.className) attrs.className = p.className;
+          if (p.style) attrs.style = p.style;
+          if (p['aria-label']) attrs['aria-label'] = p['aria-label'];
+
+          // node = [tag, attrs, children]; we want the children array
+          let kids = [];
+          if (Array.isArray(node) && Array.isArray(node[2])) {
+            kids = node[2].map(function (pair, i) {
+              // pair = [tag, attrs]
+              const tag = pair[0];
+              const childAttrs = pair[1] || {};
+              // Convert kebab-case stroke-width / stroke-linecap to camelCase for React
+              const safe = {};
+              Object.keys(childAttrs).forEach(function (k) {
+                if (k === 'stroke-width') safe.strokeWidth = childAttrs[k];
+                else if (k === 'stroke-linecap') safe.strokeLinecap = childAttrs[k];
+                else if (k === 'stroke-linejoin') safe.strokeLinejoin = childAttrs[k];
+                else if (k === 'fill-rule') safe.fillRule = childAttrs[k];
+                else if (k === 'clip-rule') safe.clipRule = childAttrs[k];
+                else safe[k] = childAttrs[k];
+              });
+              safe.key = i;
+              return React.createElement(tag, safe);
+            });
+          }
+          return React.createElement('svg', attrs, kids);
+        };
+      }
+      ['LayoutDashboard','PlusCircle','Settings','Sun','Moon','Activity','Users',
+       'DollarSign','Calendar','AlertTriangle','Shield','TrendingUp','TrendingDown',
+       'X','Search','Download','RefreshCw','Sparkles','Check','ChevronUp','ChevronDown',
+       'Trash2','Stethoscope','Inbox',
+       'UserCircle2','Heart','HeartPulse'].forEach(function (n) { window[n] = makeIcon(n); });
+      window.SettingsIcon = window.Settings;
+
+      // Boot
+      try {
+        APP_BOOT();
+      } catch (err) {
+        console.error(err);
+        document.getElementById('root').innerHTML =
+          '<pre style="padding:2rem;color:red;font-family:monospace;white-space:pre-wrap">' +
+          (err && err.stack ? err.stack : err) + '</pre>';
+      }
+    });
+
+    // The pre-compiled JSX bundle, wrapped in a function so it doesn't run
+    // until we've set up the globals above.
+    function APP_BOOT() {
+function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
+// ===== data/constants.js =====
+// Domain constants for the healthcare dataset.
+// Vitalis Healthcare Project schema.
+
+const CITIES = ['Seattle', 'Portland', 'Tacoma', 'Spokane', 'Olympia'];
+const SPECIALTIES = ['Cardiology', 'Orthopedics', 'Oncology', 'Neurology', 'Pediatrics', 'Endocrinology', 'General Medicine'];
+const INSURERS = ['BlueShield', 'Aetna', 'Medicare', 'Tricare', 'Kaiser'];
+const STATUSES = ['Completed', 'Cancelled', 'No-show'];
+const PAYMENT_TYPES = ['Insurance', 'Card', 'Cash'];
+
+// ICD-10 diagnoses present in the source data
+const DIAGNOSES = [{
+  code: 'I10',
+  label: 'Hypertension'
+}, {
+  code: 'E11',
+  label: 'Type 2 Diabetes'
+}, {
+  code: 'E03',
+  label: 'Hypothyroidism'
+}, {
+  code: 'G43',
+  label: 'Migraine'
+}, {
+  code: 'R07',
+  label: 'Chest pain'
+}, {
+  code: 'I20',
+  label: 'Angina'
+}];
+const DOCTORS = ['Dr. Adams', 'Dr. Baker', 'Dr. Chen', 'Dr. Diaz', 'Dr. Evans', 'Dr. Fischer', 'Dr. Gupta', 'Dr. Hayes', 'Dr. Iverson', 'Dr. Johnson'];
+const FIRST_NAMES = ['Alice', 'Bob', 'Carol', 'David', 'Eve', 'Frank', 'Grace', 'Henry', 'Iris', 'Jack', 'Karen', 'Leo', 'Mia', 'Noah', 'Olivia', 'Peter', 'Quinn', 'Riley', 'Sam', 'Tara'];
+const LAST_NAMES = ['Smith', 'Jones', 'Brown', 'Davis', 'Wilson', 'Moore', 'Taylor', 'Anderson', 'Thomas', 'Martin'];
+const AGE_ORDER = ['Under 18', '18-35', '36-50', '51-65', '65+'];
+
+// Clinical thresholds (American Heart Association + WHO standards)
+const BP_CATEGORIES = [{
+  name: 'Normal',
+  systolic: [0, 120],
+  diastolic: [0, 80]
+}, {
+  name: 'Elevated',
+  systolic: [120, 130],
+  diastolic: [0, 80]
+}, {
+  name: 'Stage 1',
+  systolic: [130, 140],
+  diastolic: [80, 90]
+}, {
+  name: 'Stage 2',
+  systolic: [140, 180],
+  diastolic: [90, 120]
+}, {
+  name: 'Crisis',
+  systolic: [180, 999],
+  diastolic: [120, 999]
+}];
+const BMI_RANGES = [{
+  name: 'Underweight',
+  min: 0,
+  max: 18.5
+}, {
+  name: 'Healthy',
+  min: 18.5,
+  max: 25
+}, {
+  name: 'Overweight',
+  min: 25,
+  max: 30
+}, {
+  name: 'Obese',
+  min: 30,
+  max: 999
+}];
+const CHRONIC_CONDITIONS = ['Hypertension', 'Diabetes', 'Heart disease', 'Asthma', 'None'];
+
+// ===== data/generator.js =====
+
+// Seeded PRNG — same seed produces the same dataset on every load
+function seededRandom(seed) {
+  let s = seed;
+  return () => {
+    s = (s * 9301 + 49297) % 233280;
+    return s / 233280;
+  };
+}
+const SPECIALTY_BASE_REVENUE = {
+  Cardiology: 800,
+  Orthopedics: 900,
+  Oncology: 1200,
+  Neurology: 700,
+  Pediatrics: 350,
+  Endocrinology: 550,
+  'General Medicine': 300
+};
+
+// Realistic vitals correlated with age & diagnosis
+function generateVitals(age, diagnosis, rnd) {
+  // BP: roughly normal-ish, drifts higher with age. Hypertensives get pushed up.
+  const ageOffset = (age - 30) * 0.6;
+  const hyperBoost = diagnosis === 'Hypertension' ? 25 : diagnosis === 'Angina' ? 15 : 0;
+  const systolic = Math.max(85, Math.round(110 + ageOffset + hyperBoost + (rnd() - 0.5) * 30));
+  const diastolic = Math.max(55, Math.round(72 + ageOffset * 0.3 + hyperBoost * 0.5 + (rnd() - 0.5) * 15));
+
+  // BMI: normal-ish curve, diabetics skew higher
+  const diabetesBoost = diagnosis === 'Type 2 Diabetes' ? 5 : 0;
+  const bmi = Math.max(15, Math.round((22 + diabetesBoost + (rnd() - 0.5) * 9) * 10) / 10);
+
+  // Risk score: 0–100, derived from age + vitals + diagnosis severity
+  const dxRisk = {
+    'Hypertension': 20,
+    'Type 2 Diabetes': 25,
+    'Angina': 30,
+    'Chest pain': 15
+  }[diagnosis] || 8;
+  const ageRisk = Math.min(35, Math.max(0, (age - 30) * 0.7));
+  const bpRisk = Math.max(0, (systolic - 120) * 0.5);
+  const bmiRisk = bmi > 30 ? 12 : bmi > 25 ? 6 : 0;
+  const risk = Math.min(100, Math.round(ageRisk + dxRisk + bpRisk + bmiRisk + (rnd() - 0.5) * 12));
+
+  // Chronic condition tagged from diagnosis where possible, otherwise from prior
+  let chronic;
+  if (diagnosis === 'Hypertension') chronic = 'Hypertension';else if (diagnosis === 'Type 2 Diabetes') chronic = 'Diabetes';else if (diagnosis === 'Angina') chronic = 'Heart disease';else chronic = rnd() < 0.35 ? CHRONIC_CONDITIONS[Math.floor(rnd() * 4)] : 'None';
+  return {
+    systolic,
+    diastolic,
+    bmi,
+    risk,
+    chronic
+  };
+}
+function generateRecords(count = 200, seed = 42) {
+  const rnd = seededRandom(seed);
+  const pick = arr => arr[Math.floor(rnd() * arr.length)];
+  const records = [];
+  const now = new Date();
+  for (let i = 0; i < count; i++) {
+    const dayOffset = Math.floor(rnd() * 90);
+    const date = new Date(now);
+    date.setDate(date.getDate() - dayOffset);
+    const age = 4 + Math.floor(rnd() * 85);
+    const diagnosis = pick(DIAGNOSES).label;
+    const specialty = pick(SPECIALTIES);
+
+    // Status distribution mirrors the source dataset: ~33% each of completed/cancelled/no-show
+    const roll = rnd();
+    const status = roll < 0.34 ? 'Completed' : roll < 0.67 ? 'Cancelled' : 'No-show';
+    const base = SPECIALTY_BASE_REVENUE[specialty];
+    const amount = status === 'Completed' ? Math.round(base * (0.7 + rnd() * 0.8)) : 0;
+    const coveragePct = 0.4 + rnd() * 0.55;
+    const insuranceCovered = Math.round(amount * coveragePct);
+    const patientPaid = amount - insuranceCovered;
+    const expense = Math.round(amount * (0.4 + rnd() * 0.2)); // synthetic clinic-side cost
+
+    const vitals = generateVitals(age, diagnosis, rnd);
+    records.push({
+      id: `rec_${seed}_${i}`,
+      patient: `${pick(FIRST_NAMES)} ${pick(LAST_NAMES)}`,
+      age,
+      gender: rnd() < 0.51 ? 'F' : 'M',
+      diagnosis,
+      date: date.toISOString().slice(0, 10),
+      doctor: pick(DOCTORS),
+      city: pick(CITIES),
+      specialty,
+      amount,
+      expense,
+      insuranceCovered,
+      patientPaid,
+      insurance: pick(INSURERS),
+      paymentType: pick(PAYMENT_TYPES),
+      status,
+      notes: '',
+      // Vitals — used by the Patient Health Profile section
+      systolic: vitals.systolic,
+      diastolic: vitals.diastolic,
+      bmi: vitals.bmi,
+      riskScore: vitals.risk,
+      chronicCondition: vitals.chronic
+    });
+  }
+  return records;
+}
+
+// Classify a record into clinical buckets
+function bpCategory(systolic, diastolic) {
+  if (systolic >= 180 || diastolic >= 120) return 'Crisis';
+  if (systolic >= 140 || diastolic >= 90) return 'Stage 2';
+  if (systolic >= 130 || diastolic >= 80) return 'Stage 1';
+  if (systolic >= 120) return 'Elevated';
+  return 'Normal';
+}
+function bmiCategory(bmi) {
+  for (const r of BMI_RANGES) {
+    if (bmi >= r.min && bmi < r.max) return r.name;
+  }
+  return 'Unknown';
+}
+function riskSegment(score) {
+  if (score < 25) return 'Low';
+  if (score < 50) return 'Moderate';
+  if (score < 75) return 'High';
+  return 'Critical';
+}
+
+// ===== utils/format.js =====
+// Reusable display formatters
+
+const fmtMoney = n => '$' + Math.round(n || 0).toLocaleString();
+const fmtMoneyShort = n => Math.abs(n) >= 1000 ? '$' + (n / 1000).toFixed(0) + 'k' : '$' + Math.round(n);
+const fmtNum = n => Math.round(n || 0).toLocaleString();
+const fmtPct = n => ((n || 0) * 100).toFixed(1) + '%';
+const fmtAge = n => Math.round(n || 0) + ' yrs';
+const ageGroup = age => {
+  if (age < 18) return 'Under 18';
+  if (age <= 35) return '18-35';
+  if (age <= 50) return '36-50';
+  if (age <= 65) return '51-65';
+  return '65+';
+};
+const monthKey = dateStr => (dateStr || '').slice(0, 7);
+const monthLabel = key => {
+  if (!key || key === 'all') return key;
+  const [y, m] = key.split('-');
+  return new Date(+y, +m - 1).toLocaleString('en', {
+    month: 'short'
+  }) + ' ' + y.slice(2);
+};
+const weekdayShort = dateStr => {
+  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const d = new Date(dateStr);
+  return days[(d.getDay() + 6) % 7];
+};
+
+// ===== utils/csv.js =====
+// Convert records to a downloadable CSV file
+
+function downloadCSV(rows, filename = 'export.csv') {
+  if (!rows.length) return;
+  const headers = Object.keys(rows[0]);
+  const escape = v => {
+    if (v == null) return '';
+    const s = String(v);
+    return s.includes(',') || s.includes('"') || s.includes('\n') ? '"' + s.replace(/"/g, '""') + '"' : s;
+  };
+  const csv = [headers.join(','), ...rows.map(r => headers.map(h => escape(r[h])).join(','))].join('\n');
+  const blob = new Blob([csv], {
+    type: 'text/csv;charset=utf-8'
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+function downloadJSON(data, filename = 'export.json') {
+  const blob = new Blob([JSON.stringify(data, null, 2)], {
+    type: 'application/json'
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ===== store/theme.js =====
+
+// Editorial healthcare palette — warm cream + ink + sage + coral.
+// Deliberately not the generic SaaS purple-blue gradient.
+const PALETTE = {
+  light: {
+    bg: '#F4F1EA',
+    panel: '#FBF9F4',
+    panelMuted: '#EFE9DC',
+    ink: '#1A2530',
+    inkSoft: '#4A5460',
+    inkMuted: '#8A8275',
+    line: '#D9D2BF',
+    primary: '#3D6655',
+    primarySoft: '#7FA38D',
+    accent: '#D9603F',
+    accent2: '#C2A046',
+    accent3: '#5F7FAA',
+    accent4: '#8B5A8A',
+    success: '#5A8A6A',
+    warning: '#C99B3D',
+    danger: '#B8463A'
+  },
+  dark: {
+    bg: '#13181E',
+    panel: '#1B232B',
+    panelMuted: '#222C36',
+    ink: '#EDE6D3',
+    inkSoft: '#B5AE9D',
+    inkMuted: '#6F6A5E',
+    line: '#2C3640',
+    primary: '#7FA38D',
+    primarySoft: '#3D6655',
+    accent: '#E07A5F',
+    accent2: '#D4B870',
+    accent3: '#7F9FCA',
+    accent4: '#A878A6',
+    success: '#7FA38D',
+    warning: '#D4B870',
+    danger: '#D17560'
+  }
+};
+const ThemeContext = createContext(null);
+const useTheme = () => useContext(ThemeContext);
+
+// ===== hooks/useLocalStorage.js =====
+
+// React state synced to localStorage. Reads on mount, writes on every change.
+// Gracefully degrades to in-memory state when localStorage is unavailable
+// (e.g. in some sandboxed previewers).
+function useLocalStorage(key, initialValue) {
+  const [value, setValue] = useState(() => {
+    try {
+      const stored = window.localStorage.getItem(key);
+      return stored !== null ? JSON.parse(stored) : initialValue;
+    } catch {
+      return initialValue;
+    }
+  });
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(key, JSON.stringify(value));
+    } catch {
+      // silently ignore quota / sandbox errors
+    }
+  }, [key, value]);
+  return [value, setValue];
+}
+
+// ===== hooks/useFilteredRecords.js =====
+
+// Apply the current filter state to the full record list.
+// Used by every chart on the dashboard.
+function useFilteredRecords(records, filters) {
+  return useMemo(() => {
+    return records.filter(r => {
+      if (filters.month && filters.month !== 'all' && monthKey(r.date) !== filters.month) return false;
+      if (filters.specialty && filters.specialty !== 'all' && r.specialty !== filters.specialty) return false;
+      if (filters.city && r.city !== filters.city) return false;
+      if (filters.gender && r.gender !== filters.gender) return false;
+      if (filters.insurance && r.insurance !== filters.insurance) return false;
+      if (filters.status && r.status !== filters.status) return false;
+      if (filters.diagnosis && r.diagnosis !== filters.diagnosis) return false;
+      if (filters.ageGroup && ageGroup(r.age) !== filters.ageGroup) return false;
+      if (filters.chronic && r.chronicCondition !== filters.chronic) return false;
+      return true;
+    });
+  }, [records, filters]);
+}
+const EMPTY_FILTERS = {
+  month: 'all',
+  specialty: 'all',
+  city: null,
+  gender: null,
+  insurance: null,
+  status: null,
+  diagnosis: null,
+  ageGroup: null,
+  chronic: null
+};
+
+// Clear visual cross-filters but keep the top-bar dropdowns (month, specialty)
+const VISUAL_FILTER_KEYS = ['city', 'gender', 'insurance', 'status', 'diagnosis', 'ageGroup', 'chronic'];
+function clearVisualFilters(filters) {
+  const out = {
+    ...filters
+  };
+  VISUAL_FILTER_KEYS.forEach(k => {
+    out[k] = null;
+  });
+  return out;
+}
+
+// ===== components/AnimatedNumber.jsx =====
+
+// Counts up smoothly from previous value to new value using cubic easing.
+function AnimatedNumber({
+  value,
+  format = n => Math.round(n),
+  duration = 800
+}) {
+  const [display, setDisplay] = useState(0);
+  const prev = useRef(0);
+  useEffect(() => {
+    const start = prev.current;
+    const change = value - start;
+    const startTime = performance.now();
+    let raf;
+    const tick = now => {
+      const elapsed = now - startTime;
+      const t = Math.min(1, elapsed / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      setDisplay(start + change * eased);
+      if (t < 1) raf = requestAnimationFrame(tick);else prev.current = value;
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [value, duration]);
+  return /*#__PURE__*/React.createElement("span", null, format(display));
+}
+
+// ===== components/Chip.jsx =====
+
+function Chip({
+  label,
+  onRemove
+}) {
+  const t = useTheme();
+  return /*#__PURE__*/React.createElement(motion.div, {
+    initial: {
+      opacity: 0,
+      scale: 0.9
+    },
+    animate: {
+      opacity: 1,
+      scale: 1
+    },
+    exit: {
+      opacity: 0,
+      scale: 0.9
+    },
+    className: "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs border",
+    style: {
+      background: t.primarySoft + '20',
+      borderColor: t.primary + '40',
+      color: t.primary
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "font-medium"
+  }, label), onRemove && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: onRemove,
+    className: "hover:opacity-60",
+    "aria-label": `Remove filter: ${label}`
+  }, /*#__PURE__*/React.createElement(X, {
+    size: 12
+  })));
+}
+
+// ===== components/EmptyState.jsx =====
+
+function EmptyState({
+  icon: Icon = Inbox,
+  title = 'No data',
+  subtitle
+}) {
+  const t = useTheme();
+  return /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-col items-center justify-center py-10 text-center",
+    style: {
+      color: t.inkMuted
+    }
+  }, /*#__PURE__*/React.createElement(Icon, {
+    size: 28,
+    strokeWidth: 1.5,
+    className: "opacity-60 mb-2"
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "text-sm font-medium",
+    style: {
+      color: t.inkSoft
+    }
+  }, title), subtitle && /*#__PURE__*/React.createElement("div", {
+    className: "text-xs mt-1 max-w-xs"
+  }, subtitle));
+}
+
+// ===== components/Skeleton.jsx =====
+
+// Pulsing placeholder for loading states. Composed at the call site
+// (e.g. <Skeleton className="h-40 w-full" />).
+function Skeleton({
+  className = '',
+  style = {}
+}) {
+  const t = useTheme();
+  return /*#__PURE__*/React.createElement("div", {
+    className: `rounded-lg animate-pulse ${className}`,
+    style: {
+      background: t.panelMuted,
+      ...style
+    }
+  });
+}
+
+// ===== components/Toggle.jsx =====
+
+function Toggle({
+  checked,
+  onChange,
+  label
+}) {
+  const t = useTheme();
+  return /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    role: "switch",
+    "aria-checked": checked,
+    "aria-label": label,
+    onClick: () => onChange(!checked),
+    className: "relative w-10 h-5 rounded-full transition-colors",
+    style: {
+      background: checked ? t.primary : t.line
+    }
+  }, /*#__PURE__*/React.createElement(motion.div, {
+    animate: {
+      x: checked ? 20 : 2
+    },
+    transition: {
+      type: 'spring',
+      stiffness: 500,
+      damping: 30
+    },
+    className: "absolute top-0.5 w-4 h-4 rounded-full bg-white"
+  }));
+}
+
+// ===== components/Select.jsx =====
+
+function Select({
+  value,
+  onChange,
+  options,
+  label
+}) {
+  const t = useTheme();
+  return /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-col"
+  }, label && /*#__PURE__*/React.createElement("label", {
+    className: "text-[10px] uppercase mb-1",
+    style: {
+      color: t.inkMuted,
+      letterSpacing: '0.1em'
+    }
+  }, label), /*#__PURE__*/React.createElement("select", {
+    value: value,
+    onChange: e => onChange(e.target.value),
+    className: "px-3 py-2 rounded-lg text-sm border outline-none cursor-pointer",
+    style: {
+      background: t.panel,
+      borderColor: t.line,
+      color: t.ink,
+      colorScheme: t.mode // tells the browser to render native dropdown chrome in the right theme
+    }
+  }, options.map(o => {
+    const v = typeof o === 'object' ? o.value : o;
+    const l = typeof o === 'object' ? o.label : o;
+    return /*#__PURE__*/React.createElement("option", {
+      key: v,
+      value: v,
+      style: {
+        background: t.panel,
+        color: t.ink
+      }
+    }, l);
+  })));
+}
+
+// ===== components/Toast.jsx =====
+
+function Toast({
+  message,
+  onClose
+}) {
+  const t = useTheme();
+  useEffect(() => {
+    const id = setTimeout(onClose, 2600);
+    return () => clearTimeout(id);
+  }, [onClose]);
+  return /*#__PURE__*/React.createElement(motion.div, {
+    initial: {
+      opacity: 0,
+      y: 20,
+      scale: 0.95
+    },
+    animate: {
+      opacity: 1,
+      y: 0,
+      scale: 1
+    },
+    exit: {
+      opacity: 0,
+      y: 20,
+      scale: 0.95
+    },
+    className: "fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2",
+    style: {
+      background: t.ink,
+      color: t.bg,
+      fontFamily: '"Inter", sans-serif'
+    },
+    role: "status",
+    "aria-live": "polite"
+  }, /*#__PURE__*/React.createElement(Check, {
+    size: 16
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "text-sm"
+  }, message));
+}
+
+// ===== components/ChartTooltip.jsx =====
+
+// Themed replacement for the default Recharts tooltip.
+// `valueFormat` is applied to each numeric value.
+function ChartTooltip({
+  active,
+  payload,
+  label,
+  valueFormat = v => v
+}) {
+  const t = useTheme();
+  if (!active || !payload || !payload.length) return null;
+  return /*#__PURE__*/React.createElement("div", {
+    className: "rounded-lg px-3 py-2 text-xs border backdrop-blur-md",
+    style: {
+      background: t.panel + 'EE',
+      borderColor: t.line,
+      color: t.ink,
+      boxShadow: '0 8px 24px rgba(0,0,0,0.15)'
+    }
+  }, label && /*#__PURE__*/React.createElement("div", {
+    className: "font-semibold mb-1"
+  }, label), payload.map((p, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    className: "flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "w-2 h-2 rounded-full inline-block",
+    style: {
+      background: p.color || p.fill
+    }
+  }), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: t.inkSoft
+    }
+  }, p.name, ":"), /*#__PURE__*/React.createElement("span", {
+    className: "font-medium"
+  }, valueFormat(p.value)))));
+}
+
+// ===== components/Panel.jsx =====
+
+// Reusable card container for charts and content sections.
+function Panel({
+  children,
+  className = '',
+  title,
+  subtitle,
+  action,
+  animate = true,
+  padded = true
+}) {
+  const t = useTheme();
+  const content = /*#__PURE__*/React.createElement("div", {
+    className: `rounded-2xl border ${className}`,
+    style: {
+      background: t.panel,
+      borderColor: t.line,
+      boxShadow: t.mode === 'light' ? '0 1px 2px rgba(26,37,48,0.04), 0 8px 24px -12px rgba(26,37,48,0.08)' : '0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5)'
+    }
+  }, (title || action) && /*#__PURE__*/React.createElement("div", {
+    className: "flex items-start justify-between px-5 pt-5 pb-2"
+  }, /*#__PURE__*/React.createElement("div", null, title && /*#__PURE__*/React.createElement("h3", {
+    className: "text-[13px] font-semibold uppercase",
+    style: {
+      color: t.inkSoft,
+      letterSpacing: '0.06em'
+    }
+  }, title), subtitle && /*#__PURE__*/React.createElement("p", {
+    className: "text-xs mt-0.5",
+    style: {
+      color: t.inkMuted
+    }
+  }, subtitle)), action), /*#__PURE__*/React.createElement("div", {
+    className: padded ? 'px-5 pb-5 pt-2' : ''
+  }, children));
+  if (!animate) return content;
+  return /*#__PURE__*/React.createElement(motion.div, {
+    initial: {
+      opacity: 0,
+      y: 12
+    },
+    animate: {
+      opacity: 1,
+      y: 0
+    },
+    transition: {
+      duration: 0.35,
+      ease: [0.22, 1, 0.36, 1]
+    }
+  }, content);
+}
+
+// ===== components/KpiCard.jsx =====
+
+function KpiCard({
+  icon: Icon,
+  label,
+  value,
+  format,
+  accent
+}) {
+  const t = useTheme();
+  return /*#__PURE__*/React.createElement(motion.div, {
+    whileHover: {
+      y: -2
+    },
+    transition: {
+      type: 'spring',
+      stiffness: 300,
+      damping: 25
+    },
+    className: "rounded-2xl p-5 border relative overflow-hidden",
+    style: {
+      background: t.panel,
+      borderColor: t.line,
+      boxShadow: t.mode === 'light' ? '0 1px 2px rgba(26,37,48,0.04), 0 8px 24px -12px rgba(26,37,48,0.08)' : '0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5)'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "absolute top-0 right-0 w-24 h-24 rounded-full -translate-y-8 translate-x-8 opacity-10",
+    style: {
+      background: accent
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-start justify-between relative"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "text-[11px] uppercase font-medium",
+    style: {
+      color: t.inkMuted,
+      letterSpacing: '0.1em'
+    }
+  }, label), /*#__PURE__*/React.createElement("div", {
+    className: "text-3xl mt-2",
+    style: {
+      color: t.ink,
+      fontFamily: '"Fraunces", "Playfair Display", Georgia, serif',
+      fontWeight: 500,
+      letterSpacing: '-0.02em'
+    }
+  }, /*#__PURE__*/React.createElement(AnimatedNumber, {
+    value: value,
+    format: format
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "p-2 rounded-xl",
+    style: {
+      background: t.panelMuted,
+      color: accent
+    }
+  }, /*#__PURE__*/React.createElement(Icon, {
+    size: 18,
+    strokeWidth: 1.75
+  }))));
+}
+
+// ===== components/Sidebar.jsx =====
+
+const NAV_ITEMS = [{
+  id: 'dashboard',
+  label: 'Dashboard',
+  icon: LayoutDashboard
+}, {
+  id: 'add',
+  label: 'Add Record',
+  icon: PlusCircle
+}, {
+  id: 'settings',
+  label: 'Settings',
+  icon: SettingsIcon
+}];
+function Sidebar({
+  current,
+  onNav
+}) {
+  const t = useTheme();
+  return /*#__PURE__*/React.createElement("aside", {
+    className: "hidden md:flex flex-col w-60 px-5 py-7 border-r shrink-0",
+    style: {
+      background: t.panel,
+      borderColor: t.line
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2 mb-10"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "w-9 h-9 rounded-xl flex items-center justify-center",
+    style: {
+      background: t.primary
+    }
+  }, /*#__PURE__*/React.createElement(Stethoscope, {
+    size: 18,
+    color: "white",
+    strokeWidth: 2
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "text-base",
+    style: {
+      color: t.ink,
+      fontFamily: '"Fraunces", Georgia, serif',
+      fontWeight: 600
+    }
+  }, "Vitalis"), /*#__PURE__*/React.createElement("div", {
+    className: "text-[10px] uppercase",
+    style: {
+      color: t.inkMuted,
+      letterSpacing: '0.15em'
+    }
+  }, "Health Analytics"))), /*#__PURE__*/React.createElement("nav", {
+    className: "flex flex-col gap-1"
+  }, NAV_ITEMS.map(item => {
+    const active = current === item.id;
+    return /*#__PURE__*/React.createElement("button", {
+      key: item.id,
+      onClick: () => onNav(item.id),
+      className: "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all relative",
+      style: {
+        background: active ? t.primary + '15' : 'transparent',
+        color: active ? t.primary : t.inkSoft,
+        fontWeight: active ? 600 : 400
+      }
+    }, active && /*#__PURE__*/React.createElement(motion.div, {
+      layoutId: "sidebar-active",
+      className: "absolute left-0 top-1.5 bottom-1.5 w-0.5 rounded-r",
+      style: {
+        background: t.primary
+      }
+    }), /*#__PURE__*/React.createElement(item.icon, {
+      size: 16,
+      strokeWidth: 1.75
+    }), item.label);
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "mt-auto pt-6 border-t",
+    style: {
+      borderColor: t.line
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-[10px] uppercase mb-2",
+    style: {
+      color: t.inkMuted,
+      letterSpacing: '0.15em'
+    }
+  }, "Period"), /*#__PURE__*/React.createElement("div", {
+    className: "text-xs",
+    style: {
+      color: t.inkSoft
+    }
+  }, "Last 90 days")));
+}
+
+// ===== components/BottomNav.jsx =====
+
+const ITEMS = [{
+  id: 'dashboard',
+  label: 'Dashboard',
+  icon: LayoutDashboard
+}, {
+  id: 'add',
+  label: 'Add',
+  icon: PlusCircle
+}, {
+  id: 'settings',
+  label: 'Settings',
+  icon: SettingsIcon
+}];
+function BottomNav({
+  current,
+  onNav
+}) {
+  const t = useTheme();
+  return /*#__PURE__*/React.createElement("nav", {
+    className: "md:hidden fixed bottom-0 left-0 right-0 z-40 flex justify-around px-2 py-2 border-t backdrop-blur-xl",
+    style: {
+      background: t.panel + 'DD',
+      borderColor: t.line
+    }
+  }, ITEMS.map(item => {
+    const active = current === item.id;
+    return /*#__PURE__*/React.createElement("button", {
+      key: item.id,
+      onClick: () => onNav(item.id),
+      className: "flex flex-col items-center gap-1 px-4 py-1.5 rounded-lg flex-1",
+      style: {
+        color: active ? t.primary : t.inkMuted
+      }
+    }, /*#__PURE__*/React.createElement(item.icon, {
+      size: 20,
+      strokeWidth: active ? 2 : 1.5
+    }), /*#__PURE__*/React.createElement("span", {
+      className: "text-[10px] font-medium"
+    }, item.label));
+  }));
+}
+
+// ===== components/FilterBar.jsx =====
+
+const CHIP_LABELS = {
+  city: v => `City: ${v}`,
+  gender: v => `Gender: ${v === 'F' ? 'Female' : 'Male'}`,
+  insurance: v => `Insurance: ${v}`,
+  status: v => `Status: ${v}`,
+  diagnosis: v => `Diagnosis: ${v}`,
+  ageGroup: v => `Age: ${v}`,
+  chronic: v => `Condition: ${v}`
+};
+function FilterBar({
+  records,
+  filters,
+  setFilters,
+  onCSV
+}) {
+  const t = useTheme();
+
+  // Generate the month dropdown options dynamically from the data
+  const monthOptions = useMemo(() => {
+    const months = new Set(records.map(r => monthKey(r.date)));
+    return [{
+      value: 'all',
+      label: 'All Months'
+    }, ...Array.from(months).sort().map(m => ({
+      value: m,
+      label: monthLabel(m)
+    }))];
+  }, [records]);
+
+  // Build the chip list from currently-active visual filters
+  const activeChips = useMemo(() => {
+    const out = [];
+    if (filters.month && filters.month !== 'all') {
+      out.push({
+        key: 'month',
+        label: monthLabel(filters.month),
+        reset: 'all'
+      });
+    }
+    if (filters.specialty && filters.specialty !== 'all') {
+      out.push({
+        key: 'specialty',
+        label: filters.specialty,
+        reset: 'all'
+      });
+    }
+    VISUAL_FILTER_KEYS.forEach(k => {
+      if (filters[k]) {
+        out.push({
+          key: k,
+          label: CHIP_LABELS[k](filters[k]),
+          reset: null
+        });
+      }
+    });
+    return out;
+  }, [filters]);
+  const removeChip = (key, reset) => setFilters({
+    ...filters,
+    [key]: reset
+  });
+
+  // Visual cross-filters (city / gender / insurance) live in state as either
+  // a specific value or `null`. Dropdowns need a string, so we normalise
+  // `null` ↔ `'all'` at the boundary.
+  const dropdownValue = key => filters[key] || 'all';
+  const setDropdown = key => v => setFilters({
+    ...filters,
+    [key]: v === 'all' ? null : v
+  });
+  return /*#__PURE__*/React.createElement("div", {
+    className: "sticky top-0 z-30 backdrop-blur-xl border-b px-4 md:px-8 py-4",
+    style: {
+      background: t.bg + 'D9',
+      borderColor: t.line
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap items-end gap-3 justify-between"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap items-end gap-3"
+  }, /*#__PURE__*/React.createElement(Select, {
+    label: "Period",
+    value: filters.month,
+    onChange: v => setFilters({
+      ...filters,
+      month: v
+    }),
+    options: monthOptions
+  }), /*#__PURE__*/React.createElement(Select, {
+    label: "Specialty",
+    value: filters.specialty,
+    onChange: v => setFilters({
+      ...filters,
+      specialty: v
+    }),
+    options: [{
+      value: 'all',
+      label: 'All Specialties'
+    }, ...SPECIALTIES.map(s => ({
+      value: s,
+      label: s
+    }))]
+  }), /*#__PURE__*/React.createElement(Select, {
+    label: "City",
+    value: dropdownValue('city'),
+    onChange: setDropdown('city'),
+    options: [{
+      value: 'all',
+      label: 'All Cities'
+    }, ...CITIES.map(c => ({
+      value: c,
+      label: c
+    }))]
+  }), /*#__PURE__*/React.createElement(Select, {
+    label: "Insurance",
+    value: dropdownValue('insurance'),
+    onChange: setDropdown('insurance'),
+    options: [{
+      value: 'all',
+      label: 'All Insurers'
+    }, ...INSURERS.map(i => ({
+      value: i,
+      label: i
+    }))]
+  }), /*#__PURE__*/React.createElement(Select, {
+    label: "Gender",
+    value: dropdownValue('gender'),
+    onChange: setDropdown('gender'),
+    options: [{
+      value: 'all',
+      label: 'All Genders'
+    }, {
+      value: 'F',
+      label: 'Female'
+    }, {
+      value: 'M',
+      label: 'Male'
+    }]
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-end gap-2"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: onCSV,
+    className: "flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border transition-all hover:opacity-80",
+    style: {
+      background: t.panel,
+      borderColor: t.line,
+      color: t.inkSoft
+    }
+  }, /*#__PURE__*/React.createElement(Download, {
+    size: 13
+  }), " CSV"), activeChips.length > 0 && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => setFilters(clearVisualFilters(filters)),
+    className: "flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border transition-all hover:opacity-80",
+    style: {
+      background: t.accent + '15',
+      borderColor: t.accent + '40',
+      color: t.accent
+    }
+  }, /*#__PURE__*/React.createElement(Trash2, {
+    size: 13
+  }), " Clear Visual Filters"))), /*#__PURE__*/React.createElement(AnimatePresence, null, activeChips.length > 0 && /*#__PURE__*/React.createElement(motion.div, {
+    initial: {
+      opacity: 0,
+      height: 0
+    },
+    animate: {
+      opacity: 1,
+      height: 'auto'
+    },
+    exit: {
+      opacity: 0,
+      height: 0
+    },
+    className: "flex flex-wrap gap-2 mt-3"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-[10px] uppercase mt-1.5",
+    style: {
+      color: t.inkMuted,
+      letterSpacing: '0.15em'
+    }
+  }, "Filters"), /*#__PURE__*/React.createElement(AnimatePresence, null, activeChips.map(c => /*#__PURE__*/React.createElement(Chip, {
+    key: c.key,
+    label: c.label,
+    onRemove: () => removeChip(c.key, c.reset)
+  }))))));
+}
+
+// ===== components/RecordsTable.jsx =====
+
+// Each column declares whether it's filterable and how to render its filter dropdown.
+// `filter: 'select'` builds the dropdown from distinct values in the data;
+// `filter: 'gender'` uses fixed Female/Male options.
+const COLUMNS = [{
+  id: 'date',
+  label: 'Date',
+  filter: null,
+  align: 'left'
+}, {
+  id: 'patient',
+  label: 'Patient',
+  filter: null,
+  align: 'left'
+}, {
+  id: 'gender',
+  label: 'Sex',
+  filter: 'gender',
+  align: 'left'
+}, {
+  id: 'age',
+  label: 'Age',
+  filter: null,
+  align: 'left'
+}, {
+  id: 'diagnosis',
+  label: 'Diagnosis',
+  filter: 'select',
+  align: 'left'
+}, {
+  id: 'doctor',
+  label: 'Doctor',
+  filter: 'select',
+  align: 'left'
+}, {
+  id: 'city',
+  label: 'City',
+  filter: 'select',
+  align: 'left'
+}, {
+  id: 'amount',
+  label: 'Amount',
+  filter: null,
+  align: 'right'
+}, {
+  id: 'status',
+  label: 'Status',
+  filter: 'select',
+  align: 'left'
+}];
+const PAGE_SIZE = 8;
+function RecordsTable({
+  records,
+  onDelete
+}) {
+  const t = useTheme();
+  const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState({
+    col: 'date',
+    dir: 'desc'
+  });
+  const [page, setPage] = useState(0);
+  // Per-column filter values, keyed by column id. Missing key = no filter.
+  const [colFilters, setColFilters] = useState({});
+  // Set of selected row IDs (for bulk delete)
+  const [selected, setSelected] = useState(new Set());
+  // Two-click confirmation state for the bulk delete icon
+  const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
+
+  // Distinct values for each filterable select column. Computed once per
+  // records list change.
+  const distinctValues = useMemo(() => {
+    const out = {};
+    COLUMNS.forEach(c => {
+      if (c.filter === 'select') {
+        const set = new Set();
+        records.forEach(r => {
+          if (r[c.id] != null && r[c.id] !== '') set.add(r[c.id]);
+        });
+        out[c.id] = Array.from(set).sort();
+      }
+    });
+    return out;
+  }, [records]);
+
+  // Apply search + per-column filters
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return records.filter(r => {
+      // Free-text search
+      if (q && !(r.patient.toLowerCase().includes(q) || r.diagnosis.toLowerCase().includes(q) || r.doctor.toLowerCase().includes(q) || r.city.toLowerCase().includes(q))) return false;
+      // Per-column filters
+      for (const [col, val] of Object.entries(colFilters)) {
+        if (val && r[col] !== val) return false;
+      }
+      return true;
+    });
+  }, [records, search, colFilters]);
+  const sorted = useMemo(() => {
+    const arr = [...filtered];
+    arr.sort((a, b) => {
+      const av = a[sortBy.col],
+        bv = b[sortBy.col];
+      if (av < bv) return sortBy.dir === 'asc' ? -1 : 1;
+      if (av > bv) return sortBy.dir === 'asc' ? 1 : -1;
+      return 0;
+    });
+    return arr;
+  }, [filtered, sortBy]);
+  const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages - 1);
+  const paged = sorted.slice(safePage * PAGE_SIZE, (safePage + 1) * PAGE_SIZE);
+  const handleSort = col => {
+    if (sortBy.col === col) setSortBy({
+      col,
+      dir: sortBy.dir === 'asc' ? 'desc' : 'asc'
+    });else setSortBy({
+      col,
+      dir: 'desc'
+    });
+  };
+
+  // Setting `''` clears the filter for that column.
+  const updateFilter = (col, val) => {
+    const next = {
+      ...colFilters
+    };
+    if (val === '') delete next[col];else next[col] = val;
+    setColFilters(next);
+    setPage(0);
+  };
+  const clearAllColFilters = () => {
+    setColFilters({});
+    setPage(0);
+  };
+
+  // Selection handling
+  const toggleSelected = id => {
+    const next = new Set(selected);
+    if (next.has(id)) next.delete(id);else next.add(id);
+    setSelected(next);
+  };
+  const pagedIds = paged.map(r => r.id);
+  const allPagedSelected = pagedIds.length > 0 && pagedIds.every(id => selected.has(id));
+  const someSelected = pagedIds.some(id => selected.has(id));
+  const toggleSelectAllOnPage = () => {
+    const next = new Set(selected);
+    if (allPagedSelected) {
+      pagedIds.forEach(id => next.delete(id));
+    } else {
+      pagedIds.forEach(id => next.add(id));
+    }
+    setSelected(next);
+  };
+
+  // Bulk delete with two-click confirmation
+  const handleBulkDelete = () => {
+    if (selected.size === 0) return;
+    if (!confirmBulkDelete) {
+      setConfirmBulkDelete(true);
+      setTimeout(() => setConfirmBulkDelete(false), 3000);
+      return;
+    }
+    if (onDelete) onDelete(Array.from(selected));
+    setSelected(new Set());
+    setConfirmBulkDelete(false);
+  };
+  const statusColor = s => s === 'Completed' ? t.success : s === 'No-show' ? t.danger : t.warning;
+  const activeFilterCount = Object.values(colFilters).filter(Boolean).length;
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-between mb-3 gap-3 flex-wrap"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2 flex-wrap"
+  }, onDelete && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: handleBulkDelete,
+    disabled: selected.size === 0,
+    className: "inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all disabled:opacity-30 disabled:cursor-not-allowed",
+    style: {
+      background: confirmBulkDelete ? t.danger : selected.size > 0 ? t.danger + '15' : 'transparent',
+      color: confirmBulkDelete ? 'white' : t.danger,
+      borderColor: t.danger + (confirmBulkDelete ? '' : '40')
+    },
+    title: selected.size === 0 ? 'Select rows to delete' : confirmBulkDelete ? `Click again to confirm deleting ${selected.size} record${selected.size > 1 ? 's' : ''}` : `Delete ${selected.size} selected`,
+    "aria-label": "Delete selected records"
+  }, /*#__PURE__*/React.createElement(Trash2, {
+    size: 13
+  }), selected.size > 0 && /*#__PURE__*/React.createElement("span", null, confirmBulkDelete ? `Confirm (${selected.size})` : `${selected.size}`)), activeFilterCount > 0 && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: clearAllColFilters,
+    className: "inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border",
+    style: {
+      background: t.accent + '15',
+      color: t.accent,
+      borderColor: t.accent + '40'
+    }
+  }, /*#__PURE__*/React.createElement(X, {
+    size: 11
+  }), " Clear filters")), /*#__PURE__*/React.createElement("div", {
+    className: "relative"
+  }, /*#__PURE__*/React.createElement(Search, {
+    size: 14,
+    className: "absolute left-3 top-1/2 -translate-y-1/2",
+    style: {
+      color: t.inkMuted
+    }
+  }), /*#__PURE__*/React.createElement("input", {
+    type: "search",
+    placeholder: "Search records\u2026",
+    value: search,
+    onChange: e => {
+      setSearch(e.target.value);
+      setPage(0);
+    },
+    className: "pl-9 pr-3 py-1.5 rounded-lg text-xs border outline-none w-48",
+    style: {
+      background: t.panel,
+      borderColor: t.line,
+      color: t.ink,
+      colorScheme: t.mode
+    }
+  }))), paged.length === 0 ? /*#__PURE__*/React.createElement(EmptyState, {
+    title: "No records found",
+    subtitle: search || activeFilterCount > 0 ? 'Try clearing filters or changing your search.' : 'Add a record to get started.'
+  }) : /*#__PURE__*/React.createElement("div", {
+    className: "overflow-x-auto -mx-5"
+  }, /*#__PURE__*/React.createElement("table", {
+    className: "w-full text-sm"
+  }, /*#__PURE__*/React.createElement("thead", {
+    className: "sticky top-0 z-10"
+  }, /*#__PURE__*/React.createElement("tr", {
+    style: {
+      background: t.panelMuted
+    }
+  }, onDelete && /*#__PURE__*/React.createElement("th", {
+    className: "px-3 py-2 w-8",
+    style: {
+      background: t.panelMuted
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
+    checked: allPagedSelected,
+    ref: el => {
+      if (el) el.indeterminate = someSelected && !allPagedSelected;
+    },
+    onChange: toggleSelectAllOnPage,
+    className: "cursor-pointer",
+    style: {
+      accentColor: t.primary
+    },
+    "aria-label": "Select all rows on page"
+  })), COLUMNS.map(c => /*#__PURE__*/React.createElement("th", {
+    key: c.id,
+    className: `px-4 py-2 text-[10px] uppercase cursor-pointer select-none ${c.align === 'right' ? 'text-right' : 'text-left'}`,
+    style: {
+      color: t.inkMuted,
+      letterSpacing: '0.12em'
+    },
+    onClick: () => handleSort(c.id)
+  }, /*#__PURE__*/React.createElement("span", {
+    className: `inline-flex items-center gap-1 ${c.align === 'right' ? 'justify-end' : ''}`
+  }, c.label, sortBy.col === c.id && (sortBy.dir === 'asc' ? /*#__PURE__*/React.createElement(ChevronUp, {
+    size: 11
+  }) : /*#__PURE__*/React.createElement(ChevronDown, {
+    size: 11
+  })))))), /*#__PURE__*/React.createElement("tr", {
+    style: {
+      background: t.panelMuted
+    }
+  }, onDelete && /*#__PURE__*/React.createElement("th", {
+    style: {
+      background: t.panelMuted
+    }
+  }), COLUMNS.map(c => /*#__PURE__*/React.createElement("th", {
+    key: c.id,
+    className: "px-2 pb-2",
+    style: {
+      background: t.panelMuted
+    }
+  }, c.filter === 'select' && /*#__PURE__*/React.createElement("select", {
+    value: colFilters[c.id] || '',
+    onChange: e => updateFilter(c.id, e.target.value),
+    className: "w-full px-2 py-1 rounded text-[11px] border outline-none cursor-pointer",
+    style: {
+      background: t.panel,
+      borderColor: colFilters[c.id] ? t.primary : t.line,
+      color: t.ink,
+      colorScheme: t.mode
+    }
+  }, /*#__PURE__*/React.createElement("option", {
+    value: "",
+    style: {
+      background: t.panel,
+      color: t.ink
+    }
+  }, "All"), (distinctValues[c.id] || []).map(v => /*#__PURE__*/React.createElement("option", {
+    key: v,
+    value: v,
+    style: {
+      background: t.panel,
+      color: t.ink
+    }
+  }, v))), c.filter === 'gender' && /*#__PURE__*/React.createElement("select", {
+    value: colFilters[c.id] || '',
+    onChange: e => updateFilter(c.id, e.target.value),
+    className: "w-full px-2 py-1 rounded text-[11px] border outline-none cursor-pointer",
+    style: {
+      background: t.panel,
+      borderColor: colFilters[c.id] ? t.primary : t.line,
+      color: t.ink,
+      colorScheme: t.mode
+    }
+  }, /*#__PURE__*/React.createElement("option", {
+    value: "",
+    style: {
+      background: t.panel,
+      color: t.ink
+    }
+  }, "All"), /*#__PURE__*/React.createElement("option", {
+    value: "F",
+    style: {
+      background: t.panel,
+      color: t.ink
+    }
+  }, "Female"), /*#__PURE__*/React.createElement("option", {
+    value: "M",
+    style: {
+      background: t.panel,
+      color: t.ink
+    }
+  }, "Male")))))), /*#__PURE__*/React.createElement("tbody", null, paged.map(r => {
+    const sexColor = r.gender === 'F' ? t.accent : t.accent3;
+    const isSelected = selected.has(r.id);
+    return /*#__PURE__*/React.createElement("tr", {
+      key: r.id,
+      className: "border-b",
+      style: {
+        borderColor: t.line,
+        background: isSelected ? t.primary + '10' : 'transparent'
+      }
+    }, onDelete && /*#__PURE__*/React.createElement("td", {
+      className: "px-3 py-2.5"
+    }, /*#__PURE__*/React.createElement("input", {
+      type: "checkbox",
+      checked: isSelected,
+      onChange: () => toggleSelected(r.id),
+      className: "cursor-pointer",
+      style: {
+        accentColor: t.primary
+      },
+      "aria-label": `Select record for ${r.patient}`
+    })), /*#__PURE__*/React.createElement("td", {
+      className: "px-4 py-2.5 font-mono text-xs",
+      style: {
+        color: t.inkSoft
+      }
+    }, r.date), /*#__PURE__*/React.createElement("td", {
+      className: "px-4 py-2.5",
+      style: {
+        color: t.ink
+      }
+    }, r.patient), /*#__PURE__*/React.createElement("td", {
+      className: "px-4 py-2.5"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "inline-flex items-center justify-center w-6 h-6 rounded-full text-[10px] font-semibold",
+      style: {
+        background: sexColor + '20',
+        color: sexColor
+      },
+      title: r.gender === 'F' ? 'Female' : 'Male'
+    }, r.gender)), /*#__PURE__*/React.createElement("td", {
+      className: "px-4 py-2.5 font-mono text-xs",
+      style: {
+        color: t.inkSoft
+      }
+    }, r.age), /*#__PURE__*/React.createElement("td", {
+      className: "px-4 py-2.5",
+      style: {
+        color: t.inkSoft
+      }
+    }, r.diagnosis), /*#__PURE__*/React.createElement("td", {
+      className: "px-4 py-2.5",
+      style: {
+        color: t.inkSoft
+      }
+    }, r.doctor), /*#__PURE__*/React.createElement("td", {
+      className: "px-4 py-2.5",
+      style: {
+        color: t.inkSoft
+      }
+    }, r.city), /*#__PURE__*/React.createElement("td", {
+      className: "px-4 py-2.5 font-mono text-xs text-right",
+      style: {
+        color: t.ink
+      }
+    }, fmtMoney(r.amount)), /*#__PURE__*/React.createElement("td", {
+      className: "px-4 py-2.5"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium",
+      style: {
+        background: statusColor(r.status) + '20',
+        color: statusColor(r.status)
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "w-1.5 h-1.5 rounded-full",
+      style: {
+        background: statusColor(r.status)
+      }
+    }), r.status)));
+  })))), totalPages > 1 && /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-between mt-3 text-xs",
+    style: {
+      color: t.inkSoft
+    }
+  }, /*#__PURE__*/React.createElement("span", null, "Showing ", safePage * PAGE_SIZE + 1, "\u2013", Math.min((safePage + 1) * PAGE_SIZE, sorted.length), " of ", sorted.length), /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-1"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    disabled: safePage === 0,
+    onClick: () => setPage(safePage - 1),
+    className: "px-3 py-1 rounded border disabled:opacity-40",
+    style: {
+      borderColor: t.line,
+      color: t.inkSoft
+    }
+  }, "Previous"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    disabled: safePage >= totalPages - 1,
+    onClick: () => setPage(safePage + 1),
+    className: "px-3 py-1 rounded border disabled:opacity-40",
+    style: {
+      borderColor: t.line,
+      color: t.inkSoft
+    }
+  }, "Next"))));
+}
+
+// ===== components/charts/DemographicsRow.jsx =====
+
+function DemographicsRow({
+  records,
+  filters,
+  setFilters
+}) {
+  const t = useTheme();
+  const byGender = useMemo(() => {
+    const m = {
+      F: 0,
+      M: 0
+    };
+    records.forEach(r => {
+      m[r.gender] += 1;
+    });
+    return [{
+      name: 'Female',
+      value: m.F,
+      gender: 'F'
+    }, {
+      name: 'Male',
+      value: m.M,
+      gender: 'M'
+    }];
+  }, [records]);
+  const byCity = useMemo(() => {
+    const map = new Map(CITIES.map(c => [c, 0]));
+    records.forEach(r => map.set(r.city, (map.get(r.city) || 0) + 1));
+    return Array.from(map, ([city, count]) => ({
+      city,
+      count
+    })).sort((a, b) => b.count - a.count);
+  }, [records]);
+  const byInsurance = useMemo(() => {
+    const map = new Map(INSURERS.map(c => [c, 0]));
+    records.forEach(r => map.set(r.insurance, (map.get(r.insurance) || 0) + 1));
+    return Array.from(map, ([name, value]) => ({
+      name,
+      value
+    }));
+  }, [records]);
+  const toggle = (key, val) => setFilters({
+    ...filters,
+    [key]: filters[key] === val ? null : val
+  });
+  const colors = [t.primary, t.accent, t.accent3, t.accent2, t.accent4];
+  return /*#__PURE__*/React.createElement("div", {
+    className: "grid lg:grid-cols-3 gap-6"
+  }, /*#__PURE__*/React.createElement(Panel, {
+    title: "Gender distribution",
+    subtitle: "Click a slice to filter"
+  }, /*#__PURE__*/React.createElement(ResponsiveContainer, {
+    width: "100%",
+    height: 240
+  }, /*#__PURE__*/React.createElement(PieChart, null, /*#__PURE__*/React.createElement(Pie, {
+    data: byGender,
+    dataKey: "value",
+    cx: "50%",
+    cy: "50%",
+    innerRadius: 50,
+    outerRadius: 85,
+    paddingAngle: 3,
+    onClick: d => toggle('gender', d.gender),
+    cursor: "pointer"
+  }, byGender.map((entry, i) => /*#__PURE__*/React.createElement(Cell, {
+    key: i,
+    fill: i === 0 ? t.primary : t.accent,
+    stroke: filters.gender === entry.gender ? t.ink : 'transparent',
+    strokeWidth: filters.gender === entry.gender ? 2 : 0,
+    opacity: filters.gender && filters.gender !== entry.gender ? 0.35 : 1
+  }))), /*#__PURE__*/React.createElement(Tooltip, {
+    content: /*#__PURE__*/React.createElement(ChartTooltip, null)
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-center gap-4 text-xs",
+    style: {
+      color: t.inkSoft
+    }
+  }, byGender.map((g, i) => /*#__PURE__*/React.createElement("div", {
+    key: g.name,
+    className: "flex items-center gap-1.5"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "w-2.5 h-2.5 rounded-sm inline-block",
+    style: {
+      background: i === 0 ? t.primary : t.accent
+    }
+  }), g.name, " \xB7 ", g.value)))), /*#__PURE__*/React.createElement(Panel, {
+    title: "Patients by city"
+  }, /*#__PURE__*/React.createElement(ResponsiveContainer, {
+    width: "100%",
+    height: 240
+  }, /*#__PURE__*/React.createElement(BarChart, {
+    data: byCity,
+    margin: {
+      top: 10,
+      right: 10,
+      bottom: 0,
+      left: -20
+    }
+  }, /*#__PURE__*/React.createElement(CartesianGrid, {
+    strokeDasharray: "2 4",
+    stroke: t.line,
+    vertical: false
+  }), /*#__PURE__*/React.createElement(XAxis, {
+    dataKey: "city",
+    stroke: t.inkMuted,
+    tick: {
+      fontSize: 11
+    }
+  }), /*#__PURE__*/React.createElement(YAxis, {
+    stroke: t.inkMuted,
+    tick: {
+      fontSize: 11
+    }
+  }), /*#__PURE__*/React.createElement(Tooltip, {
+    content: /*#__PURE__*/React.createElement(ChartTooltip, null),
+    cursor: {
+      fill: t.panelMuted,
+      opacity: 0.5
+    }
+  }), /*#__PURE__*/React.createElement(Bar, {
+    dataKey: "count",
+    radius: [6, 6, 0, 0],
+    onClick: d => toggle('city', d.city),
+    cursor: "pointer"
+  }, byCity.map((entry, i) => /*#__PURE__*/React.createElement(Cell, {
+    key: i,
+    fill: t.primary,
+    opacity: filters.city && filters.city !== entry.city ? 0.3 : 1
+  })))))), /*#__PURE__*/React.createElement(Panel, {
+    title: "Insurance provider mix"
+  }, /*#__PURE__*/React.createElement(ResponsiveContainer, {
+    width: "100%",
+    height: 240
+  }, /*#__PURE__*/React.createElement(PieChart, null, /*#__PURE__*/React.createElement(Pie, {
+    data: byInsurance,
+    dataKey: "value",
+    cx: "50%",
+    cy: "50%",
+    outerRadius: 85,
+    onClick: d => toggle('insurance', d.name),
+    cursor: "pointer"
+  }, byInsurance.map((entry, i) => /*#__PURE__*/React.createElement(Cell, {
+    key: i,
+    fill: colors[i % colors.length],
+    stroke: filters.insurance === entry.name ? t.ink : 'transparent',
+    strokeWidth: filters.insurance === entry.name ? 2 : 0,
+    opacity: filters.insurance && filters.insurance !== entry.name ? 0.35 : 1
+  }))), /*#__PURE__*/React.createElement(Tooltip, {
+    content: /*#__PURE__*/React.createElement(ChartTooltip, null)
+  }), /*#__PURE__*/React.createElement(Legend, {
+    wrapperStyle: {
+      fontSize: 11,
+      color: t.inkSoft
+    }
+  })))));
+}
+
+// ===== components/charts/FinancialRow.jsx =====
+
+function FinancialRow({
+  records,
+  filters,
+  setFilters
+}) {
+  const t = useTheme();
+  const monthly = useMemo(() => {
+    const map = new Map();
+    records.forEach(r => {
+      const k = monthKey(r.date);
+      const v = map.get(k) || {
+        month: k,
+        label: monthLabel(k),
+        revenue: 0,
+        expense: 0
+      };
+      v.revenue += r.amount;
+      v.expense += r.expense;
+      map.set(k, v);
+    });
+    return Array.from(map.values()).sort((a, b) => a.month.localeCompare(b.month));
+  }, [records]);
+  const byClinic = useMemo(() => {
+    const map = new Map(CITIES.map(c => [c, 0]));
+    records.forEach(r => map.set(r.city, (map.get(r.city) || 0) + r.amount));
+    return Array.from(map, ([clinic, revenue]) => ({
+      clinic,
+      revenue
+    })).sort((a, b) => b.revenue - a.revenue);
+  }, [records]);
+  const toggleCity = city => setFilters({
+    ...filters,
+    city: filters.city === city ? null : city
+  });
+  return /*#__PURE__*/React.createElement("div", {
+    className: "grid lg:grid-cols-3 gap-6"
+  }, /*#__PURE__*/React.createElement(Panel, {
+    title: "Revenue trend",
+    subtitle: "Monthly billed amount",
+    className: "lg:col-span-2"
+  }, /*#__PURE__*/React.createElement(ResponsiveContainer, {
+    width: "100%",
+    height: 260
+  }, /*#__PURE__*/React.createElement(AreaChart, {
+    data: monthly,
+    margin: {
+      top: 10,
+      right: 10,
+      bottom: 0,
+      left: -10
+    }
+  }, /*#__PURE__*/React.createElement("defs", null, /*#__PURE__*/React.createElement("linearGradient", {
+    id: "revGrad",
+    x1: "0",
+    y1: "0",
+    x2: "0",
+    y2: "1"
+  }, /*#__PURE__*/React.createElement("stop", {
+    offset: "0%",
+    stopColor: t.primary,
+    stopOpacity: 0.4
+  }), /*#__PURE__*/React.createElement("stop", {
+    offset: "100%",
+    stopColor: t.primary,
+    stopOpacity: 0
+  }))), /*#__PURE__*/React.createElement(CartesianGrid, {
+    strokeDasharray: "2 4",
+    stroke: t.line,
+    vertical: false
+  }), /*#__PURE__*/React.createElement(XAxis, {
+    dataKey: "label",
+    stroke: t.inkMuted,
+    tick: {
+      fontSize: 11
+    }
+  }), /*#__PURE__*/React.createElement(YAxis, {
+    stroke: t.inkMuted,
+    tick: {
+      fontSize: 11
+    },
+    tickFormatter: v => fmtMoneyShort(v)
+  }), /*#__PURE__*/React.createElement(Tooltip, {
+    content: /*#__PURE__*/React.createElement(ChartTooltip, {
+      valueFormat: fmtMoney
+    })
+  }), /*#__PURE__*/React.createElement(Area, {
+    type: "monotone",
+    dataKey: "revenue",
+    stroke: t.primary,
+    strokeWidth: 2.5,
+    fill: "url(#revGrad)",
+    name: "Revenue"
+  })))), /*#__PURE__*/React.createElement(Panel, {
+    title: "Revenue by clinic"
+  }, /*#__PURE__*/React.createElement(ResponsiveContainer, {
+    width: "100%",
+    height: 260
+  }, /*#__PURE__*/React.createElement(BarChart, {
+    data: byClinic,
+    layout: "vertical",
+    margin: {
+      top: 5,
+      right: 20,
+      bottom: 0,
+      left: 0
+    }
+  }, /*#__PURE__*/React.createElement(CartesianGrid, {
+    strokeDasharray: "2 4",
+    stroke: t.line,
+    horizontal: false
+  }), /*#__PURE__*/React.createElement(XAxis, {
+    type: "number",
+    stroke: t.inkMuted,
+    tick: {
+      fontSize: 10
+    },
+    tickFormatter: v => fmtMoneyShort(v)
+  }), /*#__PURE__*/React.createElement(YAxis, {
+    dataKey: "clinic",
+    type: "category",
+    stroke: t.inkMuted,
+    tick: {
+      fontSize: 11
+    },
+    width: 70
+  }), /*#__PURE__*/React.createElement(Tooltip, {
+    content: /*#__PURE__*/React.createElement(ChartTooltip, {
+      valueFormat: fmtMoney
+    }),
+    cursor: {
+      fill: t.panelMuted,
+      opacity: 0.4
+    }
+  }), /*#__PURE__*/React.createElement(Bar, {
+    dataKey: "revenue",
+    radius: [0, 6, 6, 0],
+    onClick: d => toggleCity(d.clinic),
+    cursor: "pointer"
+  }, byClinic.map((entry, i) => /*#__PURE__*/React.createElement(Cell, {
+    key: i,
+    fill: t.accent,
+    opacity: filters.city && filters.city !== entry.clinic ? 0.3 : 1
+  })))))), /*#__PURE__*/React.createElement(Panel, {
+    title: "Revenue vs expense",
+    subtitle: "Monthly comparison",
+    className: "lg:col-span-3"
+  }, /*#__PURE__*/React.createElement(ResponsiveContainer, {
+    width: "100%",
+    height: 240
+  }, /*#__PURE__*/React.createElement(ComposedChart, {
+    data: monthly,
+    margin: {
+      top: 10,
+      right: 10,
+      bottom: 0,
+      left: -10
+    }
+  }, /*#__PURE__*/React.createElement(CartesianGrid, {
+    strokeDasharray: "2 4",
+    stroke: t.line,
+    vertical: false
+  }), /*#__PURE__*/React.createElement(XAxis, {
+    dataKey: "label",
+    stroke: t.inkMuted,
+    tick: {
+      fontSize: 11
+    }
+  }), /*#__PURE__*/React.createElement(YAxis, {
+    stroke: t.inkMuted,
+    tick: {
+      fontSize: 11
+    },
+    tickFormatter: v => fmtMoneyShort(v)
+  }), /*#__PURE__*/React.createElement(Tooltip, {
+    content: /*#__PURE__*/React.createElement(ChartTooltip, {
+      valueFormat: fmtMoney
+    }),
+    cursor: {
+      fill: t.panelMuted,
+      opacity: 0.4
+    }
+  }), /*#__PURE__*/React.createElement(Bar, {
+    dataKey: "revenue",
+    fill: t.primary,
+    radius: [6, 6, 0, 0],
+    name: "Revenue"
+  }), /*#__PURE__*/React.createElement(Bar, {
+    dataKey: "expense",
+    fill: t.accent2,
+    radius: [6, 6, 0, 0],
+    name: "Expense"
+  }), /*#__PURE__*/React.createElement(Line, {
+    type: "monotone",
+    dataKey: "revenue",
+    stroke: t.primary,
+    strokeWidth: 2,
+    dot: false,
+    name: "Revenue trend"
+  })))));
+}
+
+// ===== components/charts/DoctorDiagnosisRow.jsx =====
+
+function DoctorDiagnosisRow({
+  records,
+  filters,
+  setFilters
+}) {
+  const t = useTheme();
+  const bySpecialty = useMemo(() => {
+    const map = new Map();
+    records.forEach(r => {
+      const v = map.get(r.specialty) || {
+        specialty: r.specialty,
+        count: 0,
+        revenue: 0
+      };
+      v.count += 1;
+      v.revenue += r.amount;
+      map.set(r.specialty, v);
+    });
+    return Array.from(map.values()).sort((a, b) => b.revenue - a.revenue);
+  }, [records]);
+  const byDiagnosis = useMemo(() => {
+    const map = new Map(DIAGNOSES.map(d => [d.label, 0]));
+    records.forEach(r => map.set(r.diagnosis, (map.get(r.diagnosis) || 0) + 1));
+    return Array.from(map, ([diagnosis, count]) => ({
+      diagnosis,
+      count
+    })).sort((a, b) => b.count - a.count);
+  }, [records]);
+
+  // Diagnosis trend by month — line per diagnosis
+  const diagnosisTrend = useMemo(() => {
+    const months = Array.from(new Set(records.map(r => monthKey(r.date)))).sort();
+    return months.map(m => {
+      const row = {
+        month: m,
+        label: monthLabel(m)
+      };
+      DIAGNOSES.forEach(d => {
+        row[d.label] = 0;
+      });
+      records.forEach(r => {
+        if (monthKey(r.date) === m) row[r.diagnosis] = (row[r.diagnosis] || 0) + 1;
+      });
+      return row;
+    });
+  }, [records]);
+  const colors = [t.primary, t.accent, t.accent3, t.accent2, t.accent4, t.success];
+  const toggle = (key, val) => setFilters({
+    ...filters,
+    [key]: filters[key] === val ? null : val
+  });
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "grid lg:grid-cols-2 gap-6"
+  }, /*#__PURE__*/React.createElement(Panel, {
+    title: "Revenue by specialty",
+    subtitle: "Click to filter"
+  }, /*#__PURE__*/React.createElement(ResponsiveContainer, {
+    width: "100%",
+    height: 260
+  }, /*#__PURE__*/React.createElement(BarChart, {
+    data: bySpecialty,
+    margin: {
+      top: 10,
+      right: 10,
+      bottom: 40,
+      left: -10
+    }
+  }, /*#__PURE__*/React.createElement(CartesianGrid, {
+    strokeDasharray: "2 4",
+    stroke: t.line,
+    vertical: false
+  }), /*#__PURE__*/React.createElement(XAxis, {
+    dataKey: "specialty",
+    stroke: t.inkMuted,
+    tick: {
+      fontSize: 10
+    },
+    angle: -30,
+    textAnchor: "end",
+    height: 60
+  }), /*#__PURE__*/React.createElement(YAxis, {
+    stroke: t.inkMuted,
+    tick: {
+      fontSize: 11
+    },
+    tickFormatter: v => fmtMoneyShort(v)
+  }), /*#__PURE__*/React.createElement(Tooltip, {
+    content: /*#__PURE__*/React.createElement(ChartTooltip, {
+      valueFormat: fmtMoney
+    }),
+    cursor: {
+      fill: t.panelMuted,
+      opacity: 0.4
+    }
+  }), /*#__PURE__*/React.createElement(Bar, {
+    dataKey: "revenue",
+    radius: [6, 6, 0, 0],
+    onClick: d => setFilters({
+      ...filters,
+      specialty: filters.specialty === d.specialty ? 'all' : d.specialty
+    }),
+    cursor: "pointer"
+  }, bySpecialty.map((entry, i) => /*#__PURE__*/React.createElement(Cell, {
+    key: i,
+    fill: colors[i % colors.length],
+    opacity: filters.specialty && filters.specialty !== 'all' && filters.specialty !== entry.specialty ? 0.3 : 1
+  })))))), /*#__PURE__*/React.createElement(Panel, {
+    title: "Top diagnoses",
+    subtitle: "Click to filter"
+  }, /*#__PURE__*/React.createElement(ResponsiveContainer, {
+    width: "100%",
+    height: 260
+  }, /*#__PURE__*/React.createElement(BarChart, {
+    data: byDiagnosis,
+    layout: "vertical",
+    margin: {
+      top: 5,
+      right: 20,
+      bottom: 0,
+      left: 10
+    }
+  }, /*#__PURE__*/React.createElement(CartesianGrid, {
+    strokeDasharray: "2 4",
+    stroke: t.line,
+    horizontal: false
+  }), /*#__PURE__*/React.createElement(XAxis, {
+    type: "number",
+    stroke: t.inkMuted,
+    tick: {
+      fontSize: 10
+    }
+  }), /*#__PURE__*/React.createElement(YAxis, {
+    dataKey: "diagnosis",
+    type: "category",
+    stroke: t.inkMuted,
+    tick: {
+      fontSize: 10
+    },
+    width: 100
+  }), /*#__PURE__*/React.createElement(Tooltip, {
+    content: /*#__PURE__*/React.createElement(ChartTooltip, null),
+    cursor: {
+      fill: t.panelMuted,
+      opacity: 0.4
+    }
+  }), /*#__PURE__*/React.createElement(Bar, {
+    dataKey: "count",
+    radius: [0, 6, 6, 0],
+    onClick: d => toggle('diagnosis', d.diagnosis),
+    cursor: "pointer"
+  }, byDiagnosis.map((entry, i) => /*#__PURE__*/React.createElement(Cell, {
+    key: i,
+    fill: t.accent3,
+    opacity: filters.diagnosis && filters.diagnosis !== entry.diagnosis ? 0.3 : 1
+  }))))))), /*#__PURE__*/React.createElement(Panel, {
+    title: "Diagnosis trend over time",
+    subtitle: "Monthly cases per condition"
+  }, /*#__PURE__*/React.createElement(ResponsiveContainer, {
+    width: "100%",
+    height: 260
+  }, /*#__PURE__*/React.createElement(LineChart, {
+    data: diagnosisTrend,
+    margin: {
+      top: 10,
+      right: 10,
+      bottom: 0,
+      left: -20
+    }
+  }, /*#__PURE__*/React.createElement(CartesianGrid, {
+    strokeDasharray: "2 4",
+    stroke: t.line,
+    vertical: false
+  }), /*#__PURE__*/React.createElement(XAxis, {
+    dataKey: "label",
+    stroke: t.inkMuted,
+    tick: {
+      fontSize: 11
+    }
+  }), /*#__PURE__*/React.createElement(YAxis, {
+    stroke: t.inkMuted,
+    tick: {
+      fontSize: 11
+    }
+  }), /*#__PURE__*/React.createElement(Tooltip, {
+    content: /*#__PURE__*/React.createElement(ChartTooltip, null)
+  }), DIAGNOSES.map((d, i) => /*#__PURE__*/React.createElement(Line, {
+    key: d.label,
+    type: "monotone",
+    dataKey: d.label,
+    stroke: colors[i % colors.length],
+    strokeWidth: 2,
+    dot: false,
+    name: d.label
+  })))), /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap gap-3 justify-center mt-2 text-[11px]",
+    style: {
+      color: t.inkSoft
+    }
+  }, DIAGNOSES.map((d, i) => /*#__PURE__*/React.createElement("div", {
+    key: d.label,
+    className: "flex items-center gap-1.5"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "w-2 h-2 rounded-sm inline-block",
+    style: {
+      background: colors[i % colors.length]
+    }
+  }), d.label)))));
+}
+
+// ===== components/charts/AppointmentRow.jsx =====
+
+function AppointmentRow({
+  records,
+  filters,
+  setFilters
+}) {
+  const t = useTheme();
+  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const byWeekday = useMemo(() => {
+    const map = new Map(days.map(d => [d, 0]));
+    records.forEach(r => {
+      const d = weekdayShort(r.date);
+      map.set(d, map.get(d) + 1);
+    });
+    return days.map(d => ({
+      day: d,
+      count: map.get(d)
+    }));
+  }, [records]);
+  const byStatus = useMemo(() => {
+    const map = new Map(STATUSES.map(s => [s, 0]));
+    records.forEach(r => map.set(r.status, map.get(r.status) + 1));
+    return Array.from(map, ([status, value]) => ({
+      status,
+      value
+    }));
+  }, [records]);
+  const monthlyNoShows = useMemo(() => {
+    const map = new Map();
+    records.forEach(r => {
+      const k = monthKey(r.date);
+      const v = map.get(k) || {
+        month: k,
+        label: monthLabel(k),
+        noShows: 0
+      };
+      if (r.status === 'No-show') v.noShows += 1;
+      map.set(k, v);
+    });
+    return Array.from(map.values()).sort((a, b) => a.month.localeCompare(b.month));
+  }, [records]);
+  const statusColor = s => s === 'Completed' ? t.success : s === 'No-show' ? t.danger : t.warning;
+  const toggle = (key, val) => setFilters({
+    ...filters,
+    [key]: filters[key] === val ? null : val
+  });
+  return /*#__PURE__*/React.createElement("div", {
+    className: "grid lg:grid-cols-3 gap-6"
+  }, /*#__PURE__*/React.createElement(Panel, {
+    title: "Appointments by weekday"
+  }, /*#__PURE__*/React.createElement(ResponsiveContainer, {
+    width: "100%",
+    height: 220
+  }, /*#__PURE__*/React.createElement(BarChart, {
+    data: byWeekday,
+    margin: {
+      top: 10,
+      right: 10,
+      bottom: 0,
+      left: -20
+    }
+  }, /*#__PURE__*/React.createElement(CartesianGrid, {
+    strokeDasharray: "2 4",
+    stroke: t.line,
+    vertical: false
+  }), /*#__PURE__*/React.createElement(XAxis, {
+    dataKey: "day",
+    stroke: t.inkMuted,
+    tick: {
+      fontSize: 11
+    }
+  }), /*#__PURE__*/React.createElement(YAxis, {
+    stroke: t.inkMuted,
+    tick: {
+      fontSize: 11
+    }
+  }), /*#__PURE__*/React.createElement(Tooltip, {
+    content: /*#__PURE__*/React.createElement(ChartTooltip, null),
+    cursor: {
+      fill: t.panelMuted,
+      opacity: 0.4
+    }
+  }), /*#__PURE__*/React.createElement(Bar, {
+    dataKey: "count",
+    fill: t.accent2,
+    radius: [6, 6, 0, 0]
+  })))), /*#__PURE__*/React.createElement(Panel, {
+    title: "Appointment status",
+    subtitle: "Click to filter"
+  }, /*#__PURE__*/React.createElement(ResponsiveContainer, {
+    width: "100%",
+    height: 220
+  }, /*#__PURE__*/React.createElement(PieChart, null, /*#__PURE__*/React.createElement(Pie, {
+    data: byStatus,
+    dataKey: "value",
+    cx: "50%",
+    cy: "50%",
+    innerRadius: 40,
+    outerRadius: 80,
+    paddingAngle: 3,
+    onClick: d => toggle('status', d.status),
+    cursor: "pointer"
+  }, byStatus.map((entry, i) => /*#__PURE__*/React.createElement(Cell, {
+    key: i,
+    fill: statusColor(entry.status),
+    stroke: filters.status === entry.status ? t.ink : 'transparent',
+    strokeWidth: filters.status === entry.status ? 2 : 0,
+    opacity: filters.status && filters.status !== entry.status ? 0.35 : 1
+  }))), /*#__PURE__*/React.createElement(Tooltip, {
+    content: /*#__PURE__*/React.createElement(ChartTooltip, null)
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-center gap-3 text-[11px] mt-1",
+    style: {
+      color: t.inkSoft
+    }
+  }, byStatus.map(s => /*#__PURE__*/React.createElement("div", {
+    key: s.status,
+    className: "flex items-center gap-1"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "w-2 h-2 rounded-sm inline-block",
+    style: {
+      background: statusColor(s.status)
+    }
+  }), s.status)))), /*#__PURE__*/React.createElement(Panel, {
+    title: "No-show trend"
+  }, /*#__PURE__*/React.createElement(ResponsiveContainer, {
+    width: "100%",
+    height: 220
+  }, /*#__PURE__*/React.createElement(LineChart, {
+    data: monthlyNoShows,
+    margin: {
+      top: 10,
+      right: 10,
+      bottom: 0,
+      left: -20
+    }
+  }, /*#__PURE__*/React.createElement(CartesianGrid, {
+    strokeDasharray: "2 4",
+    stroke: t.line,
+    vertical: false
+  }), /*#__PURE__*/React.createElement(XAxis, {
+    dataKey: "label",
+    stroke: t.inkMuted,
+    tick: {
+      fontSize: 10
+    }
+  }), /*#__PURE__*/React.createElement(YAxis, {
+    stroke: t.inkMuted,
+    tick: {
+      fontSize: 11
+    }
+  }), /*#__PURE__*/React.createElement(Tooltip, {
+    content: /*#__PURE__*/React.createElement(ChartTooltip, null)
+  }), /*#__PURE__*/React.createElement(Line, {
+    type: "monotone",
+    dataKey: "noShows",
+    stroke: t.danger,
+    strokeWidth: 2.5,
+    dot: {
+      fill: t.danger,
+      r: 3
+    },
+    name: "No-shows"
+  })))));
+}
+
+// ===== components/charts/RevenueByAgeAndDoctor.jsx =====
+
+function RevenueByAgeAndDoctor({
+  records,
+  filters,
+  setFilters
+}) {
+  const t = useTheme();
+  const byAgeGroup = useMemo(() => {
+    const map = new Map(AGE_ORDER.map(g => [g, {
+      revenue: 0,
+      count: 0
+    }]));
+    records.forEach(r => {
+      const g = ageGroup(r.age);
+      const v = map.get(g);
+      v.revenue += r.amount;
+      v.count += 1;
+    });
+    return AGE_ORDER.map(g => ({
+      ageGroup: g,
+      ...map.get(g)
+    }));
+  }, [records]);
+  const doctorPerf = useMemo(() => {
+    const map = new Map();
+    records.forEach(r => {
+      const v = map.get(r.doctor) || {
+        doctor: r.doctor,
+        completed: 0,
+        noShow: 0,
+        revenue: 0,
+        total: 0
+      };
+      v.total += 1;
+      v.revenue += r.amount;
+      if (r.status === 'Completed') v.completed += 1;
+      if (r.status === 'No-show') v.noShow += 1;
+      map.set(r.doctor, v);
+    });
+    return Array.from(map.values()).map(d => ({
+      ...d,
+      completionRate: d.total ? d.completed / d.total : 0
+    })).sort((a, b) => b.revenue - a.revenue).slice(0, 6);
+  }, [records]);
+  const toggleAge = ag => setFilters({
+    ...filters,
+    ageGroup: filters.ageGroup === ag ? null : ag
+  });
+  return /*#__PURE__*/React.createElement("div", {
+    className: "grid lg:grid-cols-2 gap-6"
+  }, /*#__PURE__*/React.createElement(Panel, {
+    title: "Revenue by age group",
+    subtitle: "Click to filter"
+  }, /*#__PURE__*/React.createElement(ResponsiveContainer, {
+    width: "100%",
+    height: 240
+  }, /*#__PURE__*/React.createElement(BarChart, {
+    data: byAgeGroup,
+    margin: {
+      top: 10,
+      right: 10,
+      bottom: 0,
+      left: 0
+    }
+  }, /*#__PURE__*/React.createElement(CartesianGrid, {
+    strokeDasharray: "2 4",
+    stroke: t.line,
+    vertical: false
+  }), /*#__PURE__*/React.createElement(XAxis, {
+    dataKey: "ageGroup",
+    stroke: t.inkMuted,
+    tick: {
+      fontSize: 11
+    }
+  }), /*#__PURE__*/React.createElement(YAxis, {
+    stroke: t.inkMuted,
+    tick: {
+      fontSize: 11
+    },
+    tickFormatter: v => fmtMoneyShort(v)
+  }), /*#__PURE__*/React.createElement(Tooltip, {
+    content: /*#__PURE__*/React.createElement(ChartTooltip, {
+      valueFormat: fmtMoney
+    }),
+    cursor: {
+      fill: t.panelMuted,
+      opacity: 0.4
+    }
+  }), /*#__PURE__*/React.createElement(Bar, {
+    dataKey: "revenue",
+    radius: [6, 6, 0, 0],
+    onClick: d => toggleAge(d.ageGroup),
+    cursor: "pointer"
+  }, byAgeGroup.map((entry, i) => /*#__PURE__*/React.createElement(Cell, {
+    key: i,
+    fill: t.accent4,
+    opacity: filters.ageGroup && filters.ageGroup !== entry.ageGroup ? 0.3 : 1
+  })))))), /*#__PURE__*/React.createElement(Panel, {
+    title: "Doctor efficiency rankings",
+    subtitle: "Top earners and completion rates"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "space-y-2.5 mt-1"
+  }, doctorPerf.map((d, i) => /*#__PURE__*/React.createElement(motion.div, {
+    key: d.doctor,
+    initial: {
+      opacity: 0,
+      x: -8
+    },
+    animate: {
+      opacity: 1,
+      x: 0
+    },
+    transition: {
+      delay: i * 0.05
+    },
+    className: "flex items-center gap-3"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-xs font-mono w-5",
+    style: {
+      color: t.inkMuted
+    }
+  }, String(i + 1).padStart(2, '0')), /*#__PURE__*/React.createElement("span", {
+    className: "text-sm flex-1 truncate",
+    style: {
+      color: t.ink
+    }
+  }, d.doctor), /*#__PURE__*/React.createElement("span", {
+    className: "text-xs font-mono",
+    style: {
+      color: t.inkSoft
+    }
+  }, fmtMoney(d.revenue)), /*#__PURE__*/React.createElement("div", {
+    className: "w-20 h-1.5 rounded-full overflow-hidden",
+    style: {
+      background: t.panelMuted
+    }
+  }, /*#__PURE__*/React.createElement(motion.div, {
+    initial: {
+      width: 0
+    },
+    animate: {
+      width: `${d.completionRate * 100}%`
+    },
+    transition: {
+      duration: 0.8,
+      delay: i * 0.05
+    },
+    className: "h-full rounded-full",
+    style: {
+      background: t.success
+    }
+  })), /*#__PURE__*/React.createElement("span", {
+    className: "text-[10px] font-mono w-10 text-right",
+    style: {
+      color: t.inkMuted
+    }
+  }, fmtPct(d.completionRate)))))));
+}
+
+// ===== components/charts/HealthProfileRow.jsx =====
+
+const BP_ORDER = ['Normal', 'Elevated', 'Stage 1', 'Stage 2', 'Crisis'];
+const BMI_ORDER = ['Underweight', 'Healthy', 'Overweight', 'Obese'];
+const RISK_ORDER = ['Low', 'Moderate', 'High', 'Critical'];
+function HealthProfileRow({
+  records,
+  filters,
+  setFilters
+}) {
+  const t = useTheme();
+  const byBP = useMemo(() => {
+    const map = new Map(BP_ORDER.map(b => [b, 0]));
+    records.forEach(r => {
+      const c = bpCategory(r.systolic, r.diastolic);
+      map.set(c, map.get(c) + 1);
+    });
+    return BP_ORDER.map(b => ({
+      category: b,
+      count: map.get(b)
+    }));
+  }, [records]);
+  const byBMI = useMemo(() => {
+    const map = new Map(BMI_ORDER.map(b => [b, 0]));
+    records.forEach(r => {
+      const c = bmiCategory(r.bmi);
+      map.set(c, map.get(c) + 1);
+    });
+    return BMI_ORDER.map(b => ({
+      category: b,
+      count: map.get(b)
+    }));
+  }, [records]);
+  const byChronic = useMemo(() => {
+    const map = new Map(CHRONIC_CONDITIONS.map(c => [c, 0]));
+    records.forEach(r => map.set(r.chronicCondition, map.get(r.chronicCondition) + 1));
+    return CHRONIC_CONDITIONS.map(c => ({
+      condition: c,
+      value: map.get(c)
+    }));
+  }, [records]);
+  const byRisk = useMemo(() => {
+    const map = new Map(RISK_ORDER.map(r => [r, 0]));
+    records.forEach(r => {
+      const seg = riskSegment(r.riskScore);
+      map.set(seg, map.get(seg) + 1);
+    });
+    return RISK_ORDER.map(r => ({
+      segment: r,
+      count: map.get(r)
+    }));
+  }, [records]);
+
+  // Heatmap: diagnosis × clinic location, with deeper saturation = more cases
+  const heatmap = useMemo(() => {
+    const cells = [];
+    let max = 0;
+    DIAGNOSES.forEach(d => {
+      CITIES.forEach(c => {
+        const count = records.filter(r => r.diagnosis === d.label && r.city === c).length;
+        if (count > max) max = count;
+        cells.push({
+          diagnosis: d.label,
+          code: d.code,
+          city: c,
+          count
+        });
+      });
+    });
+    return {
+      cells,
+      max
+    };
+  }, [records]);
+
+  // BP color ramp from green → red
+  const bpColor = cat => ({
+    'Normal': t.success,
+    'Elevated': t.accent2,
+    'Stage 1': t.warning,
+    'Stage 2': t.accent,
+    'Crisis': t.danger
+  })[cat] || t.primary;
+  const riskColor = seg => ({
+    'Low': t.success,
+    'Moderate': t.accent2,
+    'High': t.accent,
+    'Critical': t.danger
+  })[seg] || t.primary;
+  const chronicColors = [t.danger, t.accent2, t.accent, t.accent3, t.primarySoft];
+  const toggleChronic = val => setFilters({
+    ...filters,
+    chronic: filters.chronic === val ? null : val
+  });
+
+  // Compute a single heatmap cell color (white → primary in light, panel → primary in dark)
+  const heatColor = count => {
+    if (count === 0) return t.panelMuted;
+    const ratio = count / Math.max(1, heatmap.max);
+    // Use the primary color with varying alpha
+    const alpha = Math.round((0.15 + ratio * 0.75) * 255).toString(16).padStart(2, '0');
+    return t.primary + alpha;
+  };
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "grid lg:grid-cols-2 gap-6"
+  }, /*#__PURE__*/React.createElement(Panel, {
+    title: "Blood pressure categories",
+    subtitle: "Per ACC/AHA 2017 guidelines"
+  }, /*#__PURE__*/React.createElement(ResponsiveContainer, {
+    width: "100%",
+    height: 240
+  }, /*#__PURE__*/React.createElement(BarChart, {
+    data: byBP,
+    margin: {
+      top: 10,
+      right: 10,
+      bottom: 0,
+      left: -20
+    }
+  }, /*#__PURE__*/React.createElement(CartesianGrid, {
+    strokeDasharray: "2 4",
+    stroke: t.line,
+    vertical: false
+  }), /*#__PURE__*/React.createElement(XAxis, {
+    dataKey: "category",
+    stroke: t.inkMuted,
+    tick: {
+      fontSize: 11
+    }
+  }), /*#__PURE__*/React.createElement(YAxis, {
+    stroke: t.inkMuted,
+    tick: {
+      fontSize: 11
+    }
+  }), /*#__PURE__*/React.createElement(Tooltip, {
+    content: /*#__PURE__*/React.createElement(ChartTooltip, null),
+    cursor: {
+      fill: t.panelMuted,
+      opacity: 0.4
+    }
+  }), /*#__PURE__*/React.createElement(Bar, {
+    dataKey: "count",
+    radius: [6, 6, 0, 0]
+  }, byBP.map((entry, i) => /*#__PURE__*/React.createElement(Cell, {
+    key: i,
+    fill: bpColor(entry.category)
+  })))))), /*#__PURE__*/React.createElement(Panel, {
+    title: "BMI ranges"
+  }, /*#__PURE__*/React.createElement(ResponsiveContainer, {
+    width: "100%",
+    height: 240
+  }, /*#__PURE__*/React.createElement(BarChart, {
+    data: byBMI,
+    margin: {
+      top: 10,
+      right: 10,
+      bottom: 0,
+      left: -20
+    }
+  }, /*#__PURE__*/React.createElement(CartesianGrid, {
+    strokeDasharray: "2 4",
+    stroke: t.line,
+    vertical: false
+  }), /*#__PURE__*/React.createElement(XAxis, {
+    dataKey: "category",
+    stroke: t.inkMuted,
+    tick: {
+      fontSize: 11
+    }
+  }), /*#__PURE__*/React.createElement(YAxis, {
+    stroke: t.inkMuted,
+    tick: {
+      fontSize: 11
+    }
+  }), /*#__PURE__*/React.createElement(Tooltip, {
+    content: /*#__PURE__*/React.createElement(ChartTooltip, null),
+    cursor: {
+      fill: t.panelMuted,
+      opacity: 0.4
+    }
+  }), /*#__PURE__*/React.createElement(Bar, {
+    dataKey: "count",
+    radius: [6, 6, 0, 0]
+  }, byBMI.map((entry, i) => {
+    const c = entry.category === 'Healthy' ? t.success : entry.category === 'Underweight' ? t.accent3 : entry.category === 'Overweight' ? t.accent2 : t.danger;
+    return /*#__PURE__*/React.createElement(Cell, {
+      key: i,
+      fill: c
+    });
+  })))))), /*#__PURE__*/React.createElement("div", {
+    className: "grid lg:grid-cols-2 gap-6"
+  }, /*#__PURE__*/React.createElement(Panel, {
+    title: "Chronic disease distribution",
+    subtitle: "Click to filter"
+  }, /*#__PURE__*/React.createElement(ResponsiveContainer, {
+    width: "100%",
+    height: 260
+  }, /*#__PURE__*/React.createElement(PieChart, null, /*#__PURE__*/React.createElement(Pie, {
+    data: byChronic,
+    dataKey: "value",
+    nameKey: "condition",
+    cx: "50%",
+    cy: "50%",
+    innerRadius: 50,
+    outerRadius: 95,
+    paddingAngle: 2,
+    onClick: d => toggleChronic(d.condition),
+    cursor: "pointer"
+  }, byChronic.map((entry, i) => /*#__PURE__*/React.createElement(Cell, {
+    key: i,
+    fill: chronicColors[i % chronicColors.length],
+    stroke: filters.chronic === entry.condition ? t.ink : 'transparent',
+    strokeWidth: filters.chronic === entry.condition ? 2 : 0,
+    opacity: filters.chronic && filters.chronic !== entry.condition ? 0.35 : 1
+  }))), /*#__PURE__*/React.createElement(Tooltip, {
+    content: /*#__PURE__*/React.createElement(ChartTooltip, null)
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap gap-3 justify-center text-[11px]",
+    style: {
+      color: t.inkSoft
+    }
+  }, byChronic.map((c, i) => /*#__PURE__*/React.createElement("div", {
+    key: c.condition,
+    className: "flex items-center gap-1.5"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "w-2 h-2 rounded-sm inline-block",
+    style: {
+      background: chronicColors[i % chronicColors.length]
+    }
+  }), c.condition)))), /*#__PURE__*/React.createElement(Panel, {
+    title: "Risk score segmentation",
+    subtitle: "Composite from age, vitals, diagnosis"
+  }, /*#__PURE__*/React.createElement(ResponsiveContainer, {
+    width: "100%",
+    height: 260
+  }, /*#__PURE__*/React.createElement(BarChart, {
+    data: byRisk,
+    margin: {
+      top: 10,
+      right: 10,
+      bottom: 0,
+      left: -20
+    }
+  }, /*#__PURE__*/React.createElement(CartesianGrid, {
+    strokeDasharray: "2 4",
+    stroke: t.line,
+    vertical: false
+  }), /*#__PURE__*/React.createElement(XAxis, {
+    dataKey: "segment",
+    stroke: t.inkMuted,
+    tick: {
+      fontSize: 11
+    }
+  }), /*#__PURE__*/React.createElement(YAxis, {
+    stroke: t.inkMuted,
+    tick: {
+      fontSize: 11
+    }
+  }), /*#__PURE__*/React.createElement(Tooltip, {
+    content: /*#__PURE__*/React.createElement(ChartTooltip, null),
+    cursor: {
+      fill: t.panelMuted,
+      opacity: 0.4
+    }
+  }), /*#__PURE__*/React.createElement(Bar, {
+    dataKey: "count",
+    radius: [6, 6, 0, 0]
+  }, byRisk.map((entry, i) => /*#__PURE__*/React.createElement(Cell, {
+    key: i,
+    fill: riskColor(entry.segment)
+  }))))))), /*#__PURE__*/React.createElement(Panel, {
+    title: "Diagnosis frequency heatmap",
+    subtitle: "Cases by diagnosis \xD7 clinic location"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "overflow-x-auto"
+  }, /*#__PURE__*/React.createElement("table", {
+    className: "w-full border-separate",
+    style: {
+      borderSpacing: '4px'
+    }
+  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null), CITIES.map(c => /*#__PURE__*/React.createElement("th", {
+    key: c,
+    className: "text-[10px] uppercase px-2 pb-2",
+    style: {
+      color: t.inkMuted,
+      letterSpacing: '0.1em',
+      fontWeight: 500
+    }
+  }, c)))), /*#__PURE__*/React.createElement("tbody", null, DIAGNOSES.map(d => /*#__PURE__*/React.createElement("tr", {
+    key: d.code
+  }, /*#__PURE__*/React.createElement("td", {
+    className: "text-xs pr-3 text-right whitespace-nowrap",
+    style: {
+      color: t.inkSoft
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "font-mono text-[10px] opacity-60 mr-1"
+  }, d.code), d.label), CITIES.map(c => {
+    const cell = heatmap.cells.find(h => h.diagnosis === d.label && h.city === c);
+    return /*#__PURE__*/React.createElement("td", {
+      key: c,
+      className: "p-0"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "rounded-md flex items-center justify-center text-xs font-medium aspect-[3/2] min-h-[44px]",
+      style: {
+        background: heatColor(cell.count),
+        color: cell.count / heatmap.max > 0.5 ? 'white' : t.inkSoft
+      }
+    }, cell.count || '—'));
+  }))))))));
+}
+
+// ===== pages/Dashboard.jsx =====
+
+function Dashboard({
+  records,
+  filters,
+  setFilters,
+  prefs
+}) {
+  const t = useTheme();
+  const filtered = useFilteredRecords(records, filters);
+  const kpis = useMemo(() => {
+    const totalPatients = new Set(filtered.map(r => r.patient)).size;
+    const totalRevenue = filtered.reduce((s, r) => s + r.amount, 0);
+    const noShowCount = filtered.filter(r => r.status === 'No-show').length;
+    const totalAmount = totalRevenue;
+    const totalInsCov = filtered.reduce((s, r) => s + r.insuranceCovered, 0);
+    return {
+      totalPatients,
+      totalRevenue,
+      appointmentCount: filtered.length,
+      noShowRate: filtered.length ? noShowCount / filtered.length : 0,
+      coveragePct: totalAmount ? totalInsCov / totalAmount : 0
+    };
+  }, [filtered]);
+
+  // Smart insights — surface 2-3 actionable observations
+  const insights = useMemo(() => {
+    if (!filtered.length) return [];
+    const tips = [];
+    const noShowPct = kpis.noShowRate * 100;
+
+    // Find top clinic
+    const cityRev = new Map();
+    filtered.forEach(r => cityRev.set(r.city, (cityRev.get(r.city) || 0) + r.amount));
+    const topCity = [...cityRev.entries()].sort((a, b) => b[1] - a[1])[0];
+    if (topCity && topCity[1] > 0) {
+      tips.push(`${topCity[0]} is your top-grossing clinic at ${fmtMoney(topCity[1])} this period.`);
+    }
+
+    // Find top specialty
+    const specRev = new Map();
+    filtered.forEach(r => specRev.set(r.specialty, (specRev.get(r.specialty) || 0) + r.amount));
+    const topSpec = [...specRev.entries()].sort((a, b) => b[1] - a[1])[0];
+    if (topSpec && topSpec[1] > 0) {
+      tips.push(`${topSpec[0]} drives the most revenue (${fmtMoney(topSpec[1])}); consider expanding capacity.`);
+    }
+    if (noShowPct > 25) {
+      tips.push(`No-show rate is ${noShowPct.toFixed(1)}% — automated SMS reminders typically reduce this by ~30%.`);
+    }
+    if (kpis.coveragePct > 0 && kpis.coveragePct < 0.6) {
+      tips.push(`Insurance covers only ${fmtPct(kpis.coveragePct)} of billed amount on average — review reimbursement contracts.`);
+    }
+    return tips.slice(0, 3);
+  }, [filtered, kpis]);
+  const handleCSV = () => downloadCSV(filtered, 'vitalis-records.csv');
+  return /*#__PURE__*/React.createElement("div", {
+    className: "flex-1 min-w-0"
+  }, /*#__PURE__*/React.createElement(FilterBar, {
+    records: records,
+    filters: filters,
+    setFilters: setFilters,
+    onCSV: handleCSV
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "px-4 md:px-8 py-6 pb-28 md:pb-10 space-y-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-end justify-between flex-wrap gap-3"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "text-[10px] uppercase",
+    style: {
+      color: t.inkMuted,
+      letterSpacing: '0.2em'
+    }
+  }, "Overview"), /*#__PURE__*/React.createElement("h1", {
+    className: "text-3xl md:text-4xl mt-1",
+    style: {
+      color: t.ink,
+      fontFamily: '"Fraunces", Georgia, serif',
+      fontWeight: 500,
+      letterSpacing: '-0.02em'
+    }
+  }, "Practice performance, at a glance")), /*#__PURE__*/React.createElement("div", {
+    className: "text-xs",
+    style: {
+      color: t.inkMuted
+    }
+  }, filtered.length.toLocaleString(), " records \xB7 updated just now")), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3"
+  }, /*#__PURE__*/React.createElement(KpiCard, {
+    icon: Users,
+    label: "Total Patients",
+    value: kpis.totalPatients,
+    format: fmtNum,
+    accent: t.primary
+  }), /*#__PURE__*/React.createElement(KpiCard, {
+    icon: DollarSign,
+    label: "Total Revenue",
+    value: kpis.totalRevenue,
+    format: fmtMoney,
+    accent: t.accent
+  }), /*#__PURE__*/React.createElement(KpiCard, {
+    icon: Calendar,
+    label: "Appointments",
+    value: kpis.appointmentCount,
+    format: fmtNum,
+    accent: t.accent3
+  }), /*#__PURE__*/React.createElement(KpiCard, {
+    icon: AlertTriangle,
+    label: "No-Show Rate",
+    value: kpis.noShowRate,
+    format: fmtPct,
+    accent: t.danger
+  }), /*#__PURE__*/React.createElement(KpiCard, {
+    icon: Shield,
+    label: "Coverage %",
+    value: kpis.coveragePct,
+    format: fmtPct,
+    accent: t.accent2
+  })), prefs.insights && insights.length > 0 && /*#__PURE__*/React.createElement(Panel, {
+    title: "Smart insights",
+    subtitle: "Click any chart element to cross-filter the dashboard",
+    action: /*#__PURE__*/React.createElement(Sparkles, {
+      size: 16,
+      style: {
+        color: t.accent
+      }
+    })
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "grid md:grid-cols-3 gap-3"
+  }, insights.map((tip, i) => /*#__PURE__*/React.createElement(motion.div, {
+    key: i,
+    initial: {
+      opacity: 0,
+      y: 8
+    },
+    animate: {
+      opacity: 1,
+      y: 0
+    },
+    transition: {
+      delay: i * 0.08
+    },
+    className: "px-4 py-3 rounded-xl border-l-2",
+    style: {
+      borderLeftColor: t.accent,
+      background: t.panelMuted
+    }
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-sm leading-relaxed",
+    style: {
+      color: t.inkSoft
+    }
+  }, tip))))), /*#__PURE__*/React.createElement(DemographicsRow, {
+    records: filtered,
+    filters: filters,
+    setFilters: setFilters
+  }), /*#__PURE__*/React.createElement(FinancialRow, {
+    records: filtered,
+    filters: filters,
+    setFilters: setFilters
+  }), /*#__PURE__*/React.createElement(DoctorDiagnosisRow, {
+    records: filtered,
+    filters: filters,
+    setFilters: setFilters
+  }), /*#__PURE__*/React.createElement(AppointmentRow, {
+    records: filtered,
+    filters: filters,
+    setFilters: setFilters
+  }), /*#__PURE__*/React.createElement(RevenueByAgeAndDoctor, {
+    records: filtered,
+    filters: filters,
+    setFilters: setFilters
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-3 pt-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "h-px flex-1",
+    style: {
+      background: t.line
+    }
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "text-[10px] uppercase",
+    style: {
+      color: t.inkMuted,
+      letterSpacing: '0.2em'
+    }
+  }, "Patient Health Profile"), /*#__PURE__*/React.createElement("div", {
+    className: "h-px flex-1",
+    style: {
+      background: t.line
+    }
+  })), /*#__PURE__*/React.createElement(HealthProfileRow, {
+    records: filtered,
+    filters: filters,
+    setFilters: setFilters
+  })));
+}
+
+// ===== pages/AddRecord.jsx =====
+
+const blankForm = () => ({
+  patient: '',
+  age: '',
+  gender: 'F',
+  diagnosis: DIAGNOSES[0].label,
+  date: new Date().toISOString().slice(0, 10),
+  doctor: DOCTORS[0],
+  city: CITIES[0],
+  specialty: SPECIALTIES[0],
+  amount: '',
+  paymentType: 'Insurance',
+  insurance: INSURERS[0],
+  status: 'Completed',
+  notes: ''
+});
+function AddRecord({
+  records,
+  setRecords,
+  showToast
+}) {
+  const t = useTheme();
+  const [form, setForm] = useState(blankForm());
+  const [errors, setErrors] = useState({});
+  const validate = () => {
+    const e = {};
+    if (!form.patient.trim()) e.patient = 'Name required';
+    if (!form.age || isNaN(+form.age) || +form.age < 0 || +form.age > 120) e.age = 'Valid age required';
+    if (form.amount === '' || isNaN(+form.amount) || +form.amount < 0) e.amount = 'Valid amount required';
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
+  const submit = ev => {
+    ev.preventDefault();
+    if (!validate()) return;
+    const amt = +form.amount;
+    const covPct = 0.4 + Math.random() * 0.55;
+    // We need vitals on user-added records too so they appear on the Health Profile section
+    const age = +form.age;
+    const baseSystolic = 110 + (age - 30) * 0.6 + (form.diagnosis === 'Hypertension' ? 25 : 0);
+    const baseBMI = 22 + (form.diagnosis === 'Type 2 Diabetes' ? 5 : 0);
+    const newRec = {
+      id: `rec_user_${Date.now()}`,
+      ...form,
+      age,
+      amount: amt,
+      expense: Math.round(amt * 0.5),
+      insuranceCovered: Math.round(amt * covPct),
+      patientPaid: amt - Math.round(amt * covPct),
+      systolic: Math.round(baseSystolic),
+      diastolic: Math.round(72 + (age - 30) * 0.3),
+      bmi: Math.round(baseBMI * 10) / 10,
+      riskScore: Math.min(100, Math.max(0, Math.round((age - 30) * 0.7 + (form.diagnosis === 'Hypertension' ? 20 : 8)))),
+      chronicCondition: form.diagnosis === 'Hypertension' ? 'Hypertension' : form.diagnosis === 'Type 2 Diabetes' ? 'Diabetes' : form.diagnosis === 'Angina' ? 'Heart disease' : 'None'
+    };
+    setRecords([newRec, ...records]);
+    setForm(blankForm());
+    showToast('Record added — dashboards updated');
+  };
+  const generateDemo = () => {
+    const newRecs = generateRecords(10, Date.now() % 99999);
+    setRecords([...newRecs, ...records]);
+    showToast('Generated 10 demo records');
+  };
+  const resetDemo = () => {
+    setRecords(generateRecords(200, 42));
+    showToast('Reset to 60 days demo data');
+  };
+
+  // Accepts either a single ID or an array (for bulk-delete via the table header)
+  const deleteRecord = idOrIds => {
+    const idSet = new Set(Array.isArray(idOrIds) ? idOrIds : [idOrIds]);
+    setRecords(records.filter(r => !idSet.has(r.id)));
+    const n = idSet.size;
+    showToast(n > 1 ? `${n} records deleted` : 'Record deleted');
+  };
+  const renderField = (field, label, type = 'text', options = null) => {
+    const id = `field-${field}`;
+    return /*#__PURE__*/React.createElement("div", {
+      key: field
+    }, /*#__PURE__*/React.createElement("label", {
+      htmlFor: id,
+      className: "block text-[10px] uppercase mb-1.5",
+      style: {
+        color: t.inkMuted,
+        letterSpacing: '0.12em'
+      }
+    }, label), options ? /*#__PURE__*/React.createElement("select", {
+      id: id,
+      value: form[field],
+      onChange: e => setForm({
+        ...form,
+        [field]: e.target.value
+      }),
+      className: "w-full px-3 py-2 rounded-lg text-sm border outline-none",
+      style: {
+        background: t.panel,
+        borderColor: t.line,
+        color: t.ink,
+        colorScheme: t.mode
+      }
+    }, options.map(o => /*#__PURE__*/React.createElement("option", {
+      key: o,
+      value: o,
+      style: {
+        background: t.panel,
+        color: t.ink
+      }
+    }, o))) : /*#__PURE__*/React.createElement("input", {
+      id: id,
+      type: type,
+      value: form[field],
+      onChange: e => setForm({
+        ...form,
+        [field]: e.target.value
+      }),
+      className: "w-full px-3 py-2 rounded-lg text-sm border outline-none",
+      style: {
+        background: t.panel,
+        borderColor: errors[field] ? t.danger : t.line,
+        color: t.ink
+      },
+      "aria-invalid": !!errors[field]
+    }), errors[field] && /*#__PURE__*/React.createElement("p", {
+      className: "text-[10px] mt-1",
+      style: {
+        color: t.danger
+      }
+    }, errors[field]));
+  };
+  return /*#__PURE__*/React.createElement("div", {
+    className: "flex-1 min-w-0 px-4 md:px-8 py-6 pb-28 md:pb-10 space-y-6"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "text-[10px] uppercase",
+    style: {
+      color: t.inkMuted,
+      letterSpacing: '0.2em'
+    }
+  }, "Data Entry"), /*#__PURE__*/React.createElement("h1", {
+    className: "text-3xl md:text-4xl mt-1",
+    style: {
+      color: t.ink,
+      fontFamily: '"Fraunces", Georgia, serif',
+      fontWeight: 500,
+      letterSpacing: '-0.02em'
+    }
+  }, "Add a new record")), /*#__PURE__*/React.createElement(Panel, {
+    title: "New patient encounter",
+    action: /*#__PURE__*/React.createElement("div", {
+      className: "flex gap-2"
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: generateDemo,
+      className: "text-xs px-3 py-1.5 rounded-lg border",
+      style: {
+        background: t.panelMuted,
+        borderColor: t.line,
+        color: t.inkSoft
+      }
+    }, "+ 10 Demo Records"), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: resetDemo,
+      className: "text-xs px-3 py-1.5 rounded-lg border inline-flex items-center gap-1",
+      style: {
+        background: t.panelMuted,
+        borderColor: t.line,
+        color: t.inkSoft
+      }
+    }, /*#__PURE__*/React.createElement(RefreshCw, {
+      size: 11
+    }), " Reset 60d"))
+  }, /*#__PURE__*/React.createElement("form", {
+    onSubmit: submit,
+    className: "grid md:grid-cols-3 gap-4"
+  }, renderField('patient', 'Patient Name'), renderField('age', 'Age', 'number'), renderField('gender', 'Gender', 'text', ['F', 'M']), renderField('diagnosis', 'Diagnosis', 'text', DIAGNOSES.map(d => d.label)), renderField('date', 'Appointment Date', 'date'), renderField('doctor', 'Doctor', 'text', DOCTORS), renderField('city', 'Clinic Location', 'text', CITIES), renderField('specialty', 'Specialty', 'text', SPECIALTIES), renderField('amount', 'Revenue Amount ($)', 'number'), renderField('paymentType', 'Payment Type', 'text', PAYMENT_TYPES), renderField('insurance', 'Insurance Provider', 'text', INSURERS), renderField('status', 'Appointment Status', 'text', STATUSES), /*#__PURE__*/React.createElement("div", {
+    className: "md:col-span-3"
+  }, /*#__PURE__*/React.createElement("label", {
+    htmlFor: "field-notes",
+    className: "block text-[10px] uppercase mb-1.5",
+    style: {
+      color: t.inkMuted,
+      letterSpacing: '0.12em'
+    }
+  }, "Notes"), /*#__PURE__*/React.createElement("textarea", {
+    id: "field-notes",
+    value: form.notes,
+    onChange: e => setForm({
+      ...form,
+      notes: e.target.value
+    }),
+    rows: 2,
+    className: "w-full px-3 py-2 rounded-lg text-sm border outline-none resize-none",
+    style: {
+      background: t.panel,
+      borderColor: t.line,
+      color: t.ink
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "md:col-span-3 flex justify-end gap-2 pt-2"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => setForm(blankForm()),
+    className: "px-4 py-2 rounded-lg text-sm border",
+    style: {
+      borderColor: t.line,
+      color: t.inkSoft,
+      background: 'transparent'
+    }
+  }, "Clear"), /*#__PURE__*/React.createElement("button", {
+    type: "submit",
+    className: "px-5 py-2 rounded-lg text-sm font-medium",
+    style: {
+      background: t.primary,
+      color: 'white'
+    }
+  }, "Add Record")))), /*#__PURE__*/React.createElement(Panel, {
+    title: "Recent records"
+  }, /*#__PURE__*/React.createElement(RecordsTable, {
+    records: records,
+    onDelete: deleteRecord
+  })));
+}
+
+// ===== pages/Settings.jsx =====
+
+function Row({
+  label,
+  description,
+  action
+}) {
+  const t = useTheme();
+  return /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-between py-4 border-b last:border-b-0",
+    style: {
+      borderColor: t.line
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "text-sm font-medium",
+    style: {
+      color: t.ink
+    }
+  }, label), description && /*#__PURE__*/React.createElement("div", {
+    className: "text-xs mt-0.5",
+    style: {
+      color: t.inkMuted
+    }
+  }, description)), action);
+}
+function Settings({
+  records,
+  setRecords,
+  showToast,
+  prefs,
+  setPrefs
+}) {
+  const t = useTheme();
+  const [confirmReset, setConfirmReset] = useState(false);
+  const exportJSON = () => {
+    downloadJSON({
+      records,
+      prefs
+    }, 'vitalis-data.json');
+    showToast('Exported data');
+  };
+  const importJSON = ev => {
+    const file = ev.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const data = JSON.parse(e.target.result);
+        if (Array.isArray(data.records)) setRecords(data.records);
+        if (data.prefs && typeof data.prefs === 'object') setPrefs(data.prefs);
+        showToast('Imported data');
+      } catch {
+        showToast('Import failed — invalid JSON');
+      }
+    };
+    reader.readAsText(file);
+  };
+  const resetAll = () => {
+    if (!confirmReset) {
+      setConfirmReset(true);
+      setTimeout(() => setConfirmReset(false), 3000);
+      return;
+    }
+    setRecords(generateRecords(200, 42));
+    setConfirmReset(false);
+    showToast('All data reset');
+  };
+  return /*#__PURE__*/React.createElement("div", {
+    className: "flex-1 min-w-0 px-4 md:px-8 py-6 pb-28 md:pb-10 space-y-6 max-w-3xl"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "text-[10px] uppercase",
+    style: {
+      color: t.inkMuted,
+      letterSpacing: '0.2em'
+    }
+  }, "Configuration"), /*#__PURE__*/React.createElement("h1", {
+    className: "text-3xl md:text-4xl mt-1",
+    style: {
+      color: t.ink,
+      fontFamily: '"Fraunces", Georgia, serif',
+      fontWeight: 500,
+      letterSpacing: '-0.02em'
+    }
+  }, "Settings")), /*#__PURE__*/React.createElement(Panel, {
+    title: "Appearance"
+  }, /*#__PURE__*/React.createElement(Row, {
+    label: "Theme",
+    description: "Switch between light and dark mode",
+    action: /*#__PURE__*/React.createElement("div", {
+      className: "flex gap-1 p-1 rounded-lg",
+      style: {
+        background: t.panelMuted
+      }
+    }, ['light', 'dark'].map(m => /*#__PURE__*/React.createElement("button", {
+      key: m,
+      type: "button",
+      onClick: () => t.setMode(m),
+      className: "px-3 py-1 rounded-md text-xs flex items-center gap-1.5",
+      style: {
+        background: t.mode === m ? t.panel : 'transparent',
+        color: t.mode === m ? t.ink : t.inkMuted,
+        fontWeight: t.mode === m ? 600 : 400
+      }
+    }, m === 'light' ? /*#__PURE__*/React.createElement(Sun, {
+      size: 12
+    }) : /*#__PURE__*/React.createElement(Moon, {
+      size: 12
+    }), m.charAt(0).toUpperCase() + m.slice(1))))
+  }), /*#__PURE__*/React.createElement(Row, {
+    label: "Animations",
+    description: "Disable motion if you prefer a quieter interface",
+    action: /*#__PURE__*/React.createElement(Toggle, {
+      checked: prefs.animations,
+      onChange: v => setPrefs({
+        ...prefs,
+        animations: v
+      }),
+      label: "Animations"
+    })
+  })), /*#__PURE__*/React.createElement(Panel, {
+    title: "Dashboard preferences"
+  }, /*#__PURE__*/React.createElement(Row, {
+    label: "Smart insights",
+    description: "Show AI-style recommendations on the dashboard",
+    action: /*#__PURE__*/React.createElement(Toggle, {
+      checked: prefs.insights,
+      onChange: v => setPrefs({
+        ...prefs,
+        insights: v
+      }),
+      label: "Smart insights"
+    })
+  }), /*#__PURE__*/React.createElement(Row, {
+    label: "Notifications",
+    description: "Show toast notifications on data changes",
+    action: /*#__PURE__*/React.createElement(Toggle, {
+      checked: prefs.notifications,
+      onChange: v => setPrefs({
+        ...prefs,
+        notifications: v
+      }),
+      label: "Notifications"
+    })
+  })), /*#__PURE__*/React.createElement(Panel, {
+    title: "Data"
+  }, /*#__PURE__*/React.createElement(Row, {
+    label: "Export data",
+    description: `Download all ${records.length} records as JSON`,
+    action: /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: exportJSON,
+      className: "px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5",
+      style: {
+        background: t.panelMuted,
+        color: t.inkSoft,
+        border: `1px solid ${t.line}`
+      }
+    }, /*#__PURE__*/React.createElement(Download, {
+      size: 12
+    }), " Export")
+  }), /*#__PURE__*/React.createElement(Row, {
+    label: "Import data",
+    description: "Load records from a previously exported JSON file",
+    action: /*#__PURE__*/React.createElement("label", {
+      className: "px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer inline-flex",
+      style: {
+        background: t.panelMuted,
+        color: t.inkSoft,
+        border: `1px solid ${t.line}`
+      }
+    }, "Import", /*#__PURE__*/React.createElement("input", {
+      type: "file",
+      accept: ".json",
+      className: "hidden",
+      onChange: importJSON
+    }))
+  }), /*#__PURE__*/React.createElement(Row, {
+    label: "Reset all data",
+    description: confirmReset ? 'Click again to confirm — this cannot be undone' : 'Clear all records and restore default demo dataset',
+    action: /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: resetAll,
+      className: "px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5",
+      style: {
+        background: confirmReset ? t.danger : t.danger + '15',
+        color: confirmReset ? 'white' : t.danger,
+        border: `1px solid ${t.danger}${confirmReset ? '' : '40'}`
+      }
+    }, /*#__PURE__*/React.createElement(Trash2, {
+      size: 12
+    }), " ", confirmReset ? 'Confirm reset' : 'Reset')
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "text-center text-xs pt-4",
+    style: {
+      color: t.inkMuted
+    }
+  }, "Vitalis Health Analytics \xB7 v1.0 \xB7 Vitalis Healthcare Project"));
+}
+
+// ===== App.jsx =====
+
+const DEFAULT_PREFS = {
+  animations: true,
+  insights: true,
+  notifications: true
+};
+function App() {
+  // Persistent state — survives page refreshes
+  const [mode, setMode] = useLocalStorage('vitalis.mode', 'light');
+  const [records, setRecords] = useLocalStorage('vitalis.records', generateRecords(200, 42));
+  const [prefs, setPrefs] = useLocalStorage('vitalis.prefs', DEFAULT_PREFS);
+  const [filters, setFilters] = useLocalStorage('vitalis.filters', EMPTY_FILTERS);
+
+  // Transient state
+  const [page, setPage] = useState('dashboard');
+  const [toast, setToast] = useState(null);
+
+  // Theme context value with palette + helper setter
+  const themeValues = {
+    ...PALETTE[mode],
+    mode,
+    setMode
+  };
+  const showToast = msg => {
+    if (prefs.notifications) setToast({
+      id: Date.now(),
+      msg
+    });
+  };
+
+  // Inject Google Fonts at runtime so the app stays self-contained
+  useEffect(() => {
+    const id = 'vitalis-fonts';
+    if (document.getElementById(id)) return;
+    const link = document.createElement('link');
+    link.id = id;
+    link.rel = 'stylesheet';
+    link.href = 'https://fonts.googleapis.com/css2?family=Fraunces:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap';
+    document.head.appendChild(link);
+  }, []);
+
+  // Reflect mode on <html> so OS-level form controls (date pickers) follow theme
+  useEffect(() => {
+    document.documentElement.style.colorScheme = mode;
+  }, [mode]);
+  const pageTransition = prefs.animations ? {
+    initial: {
+      opacity: 0,
+      y: 8
+    },
+    animate: {
+      opacity: 1,
+      y: 0
+    },
+    exit: {
+      opacity: 0,
+      y: -8
+    },
+    transition: {
+      duration: 0.25
+    }
+  } : {};
+  return /*#__PURE__*/React.createElement(ThemeContext.Provider, {
+    value: themeValues
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "min-h-screen flex",
+    style: {
+      background: themeValues.bg,
+      color: themeValues.ink,
+      fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif'
+    }
+  }, /*#__PURE__*/React.createElement(Sidebar, {
+    current: page,
+    onNav: setPage
+  }), /*#__PURE__*/React.createElement("main", {
+    className: "flex-1 min-w-0 flex flex-col relative"
+  }, /*#__PURE__*/React.createElement("header", {
+    className: "md:hidden flex items-center justify-between px-4 py-4 border-b",
+    style: {
+      background: themeValues.panel,
+      borderColor: themeValues.line
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "w-8 h-8 rounded-lg flex items-center justify-center",
+    style: {
+      background: themeValues.primary
+    }
+  }, /*#__PURE__*/React.createElement(Stethoscope, {
+    size: 15,
+    color: "white"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "text-base",
+    style: {
+      color: themeValues.ink,
+      fontFamily: '"Fraunces", Georgia, serif',
+      fontWeight: 600
+    }
+  }, "Vitalis")), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => setMode(mode === 'light' ? 'dark' : 'light'),
+    className: "p-2 rounded-lg",
+    style: {
+      color: themeValues.inkSoft
+    },
+    "aria-label": "Toggle theme"
+  }, mode === 'light' ? /*#__PURE__*/React.createElement(Moon, {
+    size: 16
+  }) : /*#__PURE__*/React.createElement(Sun, {
+    size: 16
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "hidden md:flex absolute top-5 right-8 z-40"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => setMode(mode === 'light' ? 'dark' : 'light'),
+    className: "p-2 rounded-lg border",
+    style: {
+      background: themeValues.panel,
+      borderColor: themeValues.line,
+      color: themeValues.inkSoft
+    },
+    "aria-label": "Toggle theme"
+  }, mode === 'light' ? /*#__PURE__*/React.createElement(Moon, {
+    size: 14
+  }) : /*#__PURE__*/React.createElement(Sun, {
+    size: 14
+  }))), /*#__PURE__*/React.createElement(AnimatePresence, {
+    mode: "wait"
+  }, /*#__PURE__*/React.createElement(motion.div, _extends({
+    key: page
+  }, pageTransition, {
+    className: "flex-1 flex"
+  }), page === 'dashboard' && /*#__PURE__*/React.createElement(Dashboard, {
+    records: records,
+    filters: filters,
+    setFilters: setFilters,
+    prefs: prefs
+  }), page === 'add' && /*#__PURE__*/React.createElement(AddRecord, {
+    records: records,
+    setRecords: setRecords,
+    showToast: showToast
+  }), page === 'settings' && /*#__PURE__*/React.createElement(Settings, {
+    records: records,
+    setRecords: setRecords,
+    showToast: showToast,
+    prefs: prefs,
+    setPrefs: setPrefs
+  })))), /*#__PURE__*/React.createElement(BottomNav, {
+    current: page,
+    onNav: setPage
+  }), /*#__PURE__*/React.createElement(AnimatePresence, null, toast && /*#__PURE__*/React.createElement(Toast, {
+    key: toast.id,
+    message: toast.msg,
+    onClose: () => setToast(null)
+  }))));
+}
+
+// ===== mount =====
+
+const __root = ReactDOM.createRoot(document.getElementById('root'));
+__root.render(React.createElement(App));
+    }
+  </script>
+</body>
+</html>
