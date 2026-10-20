@@ -18,7 +18,7 @@ End-to-end healthcare analytics — from raw SQL to a polished React web app.
 [**📄 Read Documentation (PDF)**](docs/Vitalis-Project-Documentation.pdf) ·
 [**🗄️ View SQL Queries**](sql/healthcare_queries.sql)
 
-*Web app live URL coming soon — see [Deployment](#deployment) to publish it yourself.*
+[**🌐 Open the Vitalis web app (live)**](https://bihbrandysango-cloud.github.io/vitalis-healthcare/web/vitalis.html)
 
 </div>
 
@@ -81,6 +81,7 @@ Prefer to edit the workbook in Power BI Desktop? Download the raw file:
 
 | File | Click to… | Then… |
 |------|-----------|-------|
+| [**Live web app**](https://bihbrandysango-cloud.github.io/vitalis-healthcare/web/vitalis.html) | 🌐 Opens in your browser | Nothing to install |
 | [`web/vitalis.html`](web/vitalis.html) | 📥 Click "Download raw file" top-right of the source view | Double-click the saved file — opens in your browser |
 | [`web/vitalis-source.zip`](web/vitalis-source.zip) | 📥 Download Vite source (74 KB) | Unzip, `npm install`, `npm run dev` |
 | [`web/vitalis-netlify-deploy.zip`](web/vitalis-netlify-deploy.zip) | 📥 Download deployment bundle (217 KB) | See the [Deployment section](#deployment) below |
@@ -151,7 +152,6 @@ vitalis-healthcare/
 ├── README.md                       This file
 ├── LICENSE                         MIT
 ├── CONTRIBUTING.md                 How to contribute
-├── GITHUB-SETUP.md                 Step-by-step guide to publish this repo
 ├── .gitignore
 │
 ├── docs/                           Project documentation
@@ -180,16 +180,12 @@ vitalis-healthcare/
 The Power BI report is published and live at:
 https://app.powerbi.com/links/SsuRswiz5q?ctid=74283479-689a-49e8-9a3b-d4098db086cb&pbi_source=linkShare
 
-### Web app — deploy in 90 seconds (Netlify Drop)
+### Web app — already deployed ✅
 
-1. Download [`web/vitalis-netlify-deploy.zip`](web/vitalis-netlify-deploy.zip) from this repo
-2. Unzip it on your computer
-3. Open [app.netlify.com/drop](https://app.netlify.com/drop) in your browser
-4. Drag the unzipped folder onto the drop area
-5. Netlify gives you a public URL like `vitalis-abc123.netlify.app`
-6. Update this README: replace the *"Web app live URL coming soon"* line near the top with your new URL
+The single-file build is served by GitHub Pages at:
+https://bihbrandysango-cloud.github.io/vitalis-healthcare/web/vitalis.html
 
-Alternatives: deploy with `npx vercel` from the unzipped Vite source, or push the build to GitHub Pages — see [`GITHUB-SETUP.md`](GITHUB-SETUP.md).
+To host your own copy elsewhere, unzip [`web/vitalis-netlify-deploy.zip`](web/vitalis-netlify-deploy.zip) and drag the folder onto [app.netlify.com/drop](https://app.netlify.com/drop).
 
 ---
 
@@ -199,7 +195,7 @@ If you'd rather develop locally than deploy:
 
 ```bash
 # 1. Clone
-git clone https://github.com/<YOUR-USERNAME>/vitalis-healthcare.git
+git clone https://github.com/bihbrandysango-cloud/vitalis-healthcare.git
 cd vitalis-healthcare
 
 # 2. SQL — load schema and queries into PostgreSQL
