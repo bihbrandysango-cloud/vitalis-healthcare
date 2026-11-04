@@ -1,0 +1,14 @@
+table 'Sim Cut'
+	lineageTag: be2f93f7-e548-4908-97ac-f86e4441a9f2
+
+	column 'Cut %'
+		dataType: int64
+		formatString: 0\%
+		lineageTag: b532c8d4-1e59-4678-9603-2b18682a9821
+		summarizeBy: none
+		sourceColumn: [Value]
+
+	partition 'Sim Cut' = calculated
+		mode: import
+		source = GENERATESERIES(0,50,10)
+

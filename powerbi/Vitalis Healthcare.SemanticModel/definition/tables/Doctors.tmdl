@@ -1,0 +1,38 @@
+table Doctors
+	lineageTag: 99ef79fe-ba88-4989-8b30-791a1edbd44f
+
+	column doctor_id
+		dataType: int64
+		lineageTag: cea051b5-0f57-479d-9915-d8b4600834ba
+		summarizeBy: none
+		sourceColumn: doctor_id
+
+	column doctor_name
+		dataType: string
+		lineageTag: 85c8f682-1741-4d7a-bdd4-8c3de76667e5
+		summarizeBy: none
+		sourceColumn: doctor_name
+
+	column specialty
+		dataType: string
+		lineageTag: 89029d7e-bb7a-4b53-b0ff-c8149e530ebe
+		summarizeBy: none
+		sourceColumn: specialty
+
+	column clinic_location
+		dataType: string
+		lineageTag: b52b929c-ca1b-43bb-ad31-1193db7e79fe
+		summarizeBy: none
+		sourceColumn: clinic_location
+
+	partition Doctors = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "doctors.csv"),[Delimiter=",", Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    H = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    K = Table.SelectColumns(H,{"doctor_id","doctor_name","specialty","clinic_location"}),
+				    T = Table.TransformColumnTypes(K,{{"doctor_id", Int64.Type},{"doctor_name", type text},{"specialty", type text},{"clinic_location", type text}})
+				in
+				    T
+

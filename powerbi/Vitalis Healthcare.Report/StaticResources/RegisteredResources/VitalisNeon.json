@@ -1,0 +1,56 @@
+{
+  "name": "VitalisNeon",
+  "dataColors": [
+    "#7C5CF5",
+    "#FFB86B",
+    "#EDEBF3",
+    "#FF5C93",
+    "#4DD0E1",
+    "#B79CFF",
+    "#5FA8D3",
+    "#C77DFF"
+  ],
+  "background": "#17151F",
+  "foreground": "#FFFFFF",
+  "tableAccent": "#B79CFF",
+  "textClasses": {
+    "label": {
+      "fontFace": "Segoe UI",
+      "color": "#EDEBF3",
+      "fontSize": 9
+    },
+    "callout": {
+      "fontFace": "Segoe UI",
+      "color": "#FFFFFF"
+    },
+    "title": {
+      "fontFace": "Segoe UI Semibold",
+      "color": "#FFFFFF"
+    },
+    "header": {
+      "fontFace": "Segoe UI Semibold",
+      "color": "#FFFFFF"
+    }
+  },
+  "visualStyles": {
+    "*": {
+      "*": {
+        "background": [
+          {
+            "show": false
+          }
+        ],
+        "border": [
+          {
+            "show": false
+          }
+        ],
+        "dropShadow": [
+          {
+            "show": false
+          }
+        ]
+      }
+    }
+  }
+}

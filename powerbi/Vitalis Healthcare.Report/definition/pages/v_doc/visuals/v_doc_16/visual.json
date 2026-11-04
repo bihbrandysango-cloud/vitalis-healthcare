@@ -1,0 +1,304 @@
+{
+ "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
+ "name": "v_doc_16",
+ "position": {
+  "x": 450,
+  "y": 438,
+  "z": 1016,
+  "height": 263,
+  "width": 800,
+  "tabOrder": 1016
+ },
+ "visual": {
+  "visualType": "tableEx",
+  "query": {
+   "queryState": {
+    "Values": {
+     "projections": [
+      {
+       "field": {
+        "Column": {
+         "Expression": {
+          "SourceRef": {
+           "Entity": "Doctors"
+          }
+         },
+         "Property": "doctor_name"
+        }
+       },
+       "queryRef": "Doctors.doctor_name",
+       "nativeQueryRef": "Doctor",
+       "displayName": "Doctor"
+      },
+      {
+       "field": {
+        "Column": {
+         "Expression": {
+          "SourceRef": {
+           "Entity": "Doctors"
+          }
+         },
+         "Property": "specialty"
+        }
+       },
+       "queryRef": "Doctors.specialty",
+       "nativeQueryRef": "Specialty",
+       "displayName": "Specialty"
+      },
+      {
+       "field": {
+        "Column": {
+         "Expression": {
+          "SourceRef": {
+           "Entity": "Doctors"
+          }
+         },
+         "Property": "clinic_location"
+        }
+       },
+       "queryRef": "Doctors.clinic_location",
+       "nativeQueryRef": "Clinic",
+       "displayName": "Clinic"
+      },
+      {
+       "field": {
+        "Measure": {
+         "Expression": {
+          "SourceRef": {
+           "Entity": "_Measures"
+          }
+         },
+         "Property": "Appointments"
+        }
+       },
+       "queryRef": "_Measures.Appointments",
+       "nativeQueryRef": "Appointments"
+      },
+      {
+       "field": {
+        "Measure": {
+         "Expression": {
+          "SourceRef": {
+           "Entity": "_Measures"
+          }
+         },
+         "Property": "No-show Rate"
+        }
+       },
+       "queryRef": "_Measures.No-show Rate",
+       "nativeQueryRef": "No-show Rate"
+      },
+      {
+       "field": {
+        "Measure": {
+         "Expression": {
+          "SourceRef": {
+           "Entity": "_Measures"
+          }
+         },
+         "Property": "Billed"
+        }
+       },
+       "queryRef": "_Measures.Billed",
+       "nativeQueryRef": "Billed"
+      }
+     ]
+    }
+   },
+   "sortDefinition": {
+    "sort": [
+     {
+      "field": {
+       "Measure": {
+        "Expression": {
+         "SourceRef": {
+          "Entity": "_Measures"
+         }
+        },
+        "Property": "Billed"
+       }
+      },
+      "direction": "Descending"
+     }
+    ],
+    "isDefaultSort": true
+   }
+  },
+  "objects": {
+   "columnHeaders": [
+    {
+     "properties": {
+      "fontColor": {
+       "solid": {
+        "color": {
+         "expr": {
+          "Literal": {
+           "Value": "'#B79CFF'"
+          }
+         }
+        }
+       }
+      },
+      "backColor": {
+       "solid": {
+        "color": {
+         "expr": {
+          "Literal": {
+           "Value": "'#17151F'"
+          }
+         }
+        }
+       }
+      },
+      "fontSize": {
+       "expr": {
+        "Literal": {
+         "Value": "9D"
+        }
+       }
+      },
+      "bold": {
+       "expr": {
+        "Literal": {
+         "Value": "true"
+        }
+       }
+      }
+     }
+    }
+   ],
+   "values": [
+    {
+     "properties": {
+      "fontColorPrimary": {
+       "solid": {
+        "color": {
+         "expr": {
+          "Literal": {
+           "Value": "'#EDEBF3'"
+          }
+         }
+        }
+       }
+      },
+      "backColorPrimary": {
+       "solid": {
+        "color": {
+         "expr": {
+          "Literal": {
+           "Value": "'#17151F'"
+          }
+         }
+        }
+       }
+      },
+      "fontColorSecondary": {
+       "solid": {
+        "color": {
+         "expr": {
+          "Literal": {
+           "Value": "'#EDEBF3'"
+          }
+         }
+        }
+       }
+      },
+      "backColorSecondary": {
+       "solid": {
+        "color": {
+         "expr": {
+          "Literal": {
+           "Value": "'#1D1A26'"
+          }
+         }
+        }
+       }
+      },
+      "fontSize": {
+       "expr": {
+        "Literal": {
+         "Value": "9D"
+        }
+       }
+      }
+     }
+    }
+   ],
+   "grid": [
+    {
+     "properties": {
+      "gridHorizontal": {
+       "expr": {
+        "Literal": {
+         "Value": "false"
+        }
+       }
+      },
+      "gridVertical": {
+       "expr": {
+        "Literal": {
+         "Value": "false"
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  "visualContainerObjects": {
+   "background": [
+    {
+     "properties": {
+      "show": {
+       "expr": {
+        "Literal": {
+         "Value": "false"
+        }
+       }
+      }
+     }
+    }
+   ],
+   "border": [
+    {
+     "properties": {
+      "show": {
+       "expr": {
+        "Literal": {
+         "Value": "false"
+        }
+       }
+      }
+     }
+    }
+   ],
+   "title": [
+    {
+     "properties": {
+      "show": {
+       "expr": {
+        "Literal": {
+         "Value": "false"
+        }
+       }
+      }
+     }
+    }
+   ],
+   "dropShadow": [
+    {
+     "properties": {
+      "show": {
+       "expr": {
+        "Literal": {
+         "Value": "false"
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  "drillFilterOtherVisuals": true
+ }
+}

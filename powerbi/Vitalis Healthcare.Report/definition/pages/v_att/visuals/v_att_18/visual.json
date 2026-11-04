@@ -1,0 +1,178 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
+  "name": "v_att_18",
+  "position": {
+    "x": 30,
+    "y": 476,
+    "z": 1018,
+    "height": 225,
+    "width": 638,
+    "tabOrder": 1018
+  },
+  "visual": {
+    "visualType": "deneb7E15AEF80B9E4D4F8E12924291ECE89A",
+    "query": {
+      "queryState": {
+        "dataset": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Doctors"
+                    }
+                  },
+                  "Property": "doctor_name"
+                }
+              },
+              "queryRef": "Doctors.doctor_name",
+              "nativeQueryRef": "doc",
+              "displayName": "doc"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "No-shows"
+                }
+              },
+              "queryRef": "_Measures.No-shows",
+              "nativeQueryRef": "val",
+              "displayName": "val"
+            }
+          ]
+        }
+      }
+    },
+    "objects": {
+      "vega": [
+        {
+          "properties": {
+            "provider": {
+              "expr": {
+                "Literal": {
+                  "Value": "'vegaLite'"
+                }
+              }
+            },
+            "jsonSpec": {
+              "expr": {
+                "Literal": {
+                  "Value": "'{\"$schema\": \"https://vega.github.io/schema/vega-lite/v5.json\", \"data\": {\"name\": \"dataset\"}, \"width\": \"container\", \"height\": \"container\", \"transform\": [{\"window\": [{\"op\": \"row_number\", \"as\": \"rk\"}, {\"op\": \"sum\", \"field\": \"val\", \"as\": \"run\"}], \"sort\": [{\"field\": \"val\", \"order\": \"descending\"}, {\"field\": \"doc\", \"order\": \"ascending\"}]}, {\"joinaggregate\": [{\"op\": \"sum\", \"field\": \"val\", \"as\": \"tot\"}]}, {\"calculate\": \"datum.run/datum.tot\", \"as\": \"cum\"}, {\"calculate\": \"datum.cum<=0.8\", \"as\": \"core\"}], \"layer\": [{\"mark\": {\"type\": \"bar\", \"cornerRadius\": 0}, \"encoding\": {\"x\": {\"field\": \"rk\", \"type\": \"ordinal\", \"axis\": null}, \"y\": {\"field\": \"val\", \"type\": \"quantitative\", \"axis\": null}, \"color\": {\"condition\": {\"test\": \"datum.core\", \"value\": \"#7C5CF5\"}, \"value\": \"#322D3E\"}, \"opacity\": {\"condition\": {\"test\": \"datum.__selected__==''off''\", \"value\": 0.25}, \"value\": 1}, \"tooltip\": [{\"field\": \"doc\", \"title\": \"Doctor\"}, {\"field\": \"val\", \"title\": \"no-shows\", \"format\": \",.0f\"}, {\"field\": \"cum\", \"title\": \"Running share\", \"format\": \".1%\"}]}}, {\"mark\": {\"type\": \"line\", \"color\": \"#FFB86B\", \"strokeWidth\": 2}, \"encoding\": {\"x\": {\"field\": \"rk\", \"type\": \"ordinal\", \"axis\": null}, \"y\": {\"field\": \"cum\", \"type\": \"quantitative\", \"axis\": null, \"scale\": {\"domain\": [0, 1]}}}}, {\"mark\": {\"type\": \"rule\", \"color\": \"#FFFFFF\", \"strokeDash\": [4, 3], \"opacity\": 0.6}, \"encoding\": {\"y\": {\"datum\": 0.8, \"type\": \"quantitative\", \"scale\": {\"domain\": [0, 1]}, \"axis\": null}}}, {\"transform\": [{\"filter\": \"datum.core\"}, {\"joinaggregate\": [{\"op\": \"max\", \"field\": \"rk\", \"as\": \"mk\"}]}, {\"filter\": \"datum.rk==datum.mk\"}, {\"calculate\": \"datum.mk+'' doctors hold 80% of no-shows''\", \"as\": \"t\"}], \"mark\": {\"type\": \"text\", \"align\": \"right\", \"dy\": -8, \"dx\": -2, \"fontSize\": 10.5, \"fontWeight\": 700, \"color\": \"#FFB86B\"}, \"encoding\": {\"x\": {\"field\": \"rk\", \"type\": \"ordinal\", \"axis\": null}, \"y\": {\"datum\": 0.8, \"type\": \"quantitative\", \"scale\": {\"domain\": [0, 1]}, \"axis\": null}, \"text\": {\"field\": \"t\"}}}], \"resolve\": {\"scale\": {\"y\": \"independent\"}}}'"
+                }
+              }
+            },
+            "jsonConfig": {
+              "expr": {
+                "Literal": {
+                  "Value": "'{\"view\": {\"stroke\": \"transparent\"}, \"font\": \"Segoe UI\", \"padding\": 0, \"background\": \"transparent\"}'"
+                }
+              }
+            },
+            "renderMode": {
+              "expr": {
+                "Literal": {
+                  "Value": "'svg'"
+                }
+              }
+            },
+            "enableTooltips": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "version": {
+              "expr": {
+                "Literal": {
+                  "Value": "'6.4.3'"
+                }
+              }
+            },
+            "enableSelection": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "border": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "dropShadow": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeader": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

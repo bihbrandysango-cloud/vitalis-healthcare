@@ -1,0 +1,268 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
+  "name": "v_att_17",
+  "position": {
+    "x": 30,
+    "y": 262,
+    "z": 1017,
+    "height": 165,
+    "width": 1220,
+    "tabOrder": 1017
+  },
+  "visual": {
+    "visualType": "deneb7E15AEF80B9E4D4F8E12924291ECE89A",
+    "query": {
+      "queryState": {
+        "dataset": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Date"
+                    }
+                  },
+                  "Property": "Date"
+                }
+              },
+              "queryRef": "Date.Date",
+              "nativeQueryRef": "d",
+              "displayName": "d"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Date"
+                    }
+                  },
+                  "Property": "WeekIdx"
+                }
+              },
+              "queryRef": "Date.WeekIdx",
+              "nativeQueryRef": "wk",
+              "displayName": "wk"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Date"
+                    }
+                  },
+                  "Property": "DayNo"
+                }
+              },
+              "queryRef": "Date.DayNo",
+              "nativeQueryRef": "dn",
+              "displayName": "dn"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Date"
+                    }
+                  },
+                  "Property": "DayOfMonth"
+                }
+              },
+              "queryRef": "Date.DayOfMonth",
+              "nativeQueryRef": "dom",
+              "displayName": "dom"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Date"
+                    }
+                  },
+                  "Property": "MonShort"
+                }
+              },
+              "queryRef": "Date.MonShort",
+              "nativeQueryRef": "mon",
+              "displayName": "mon"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Date"
+                    }
+                  },
+                  "Property": "Day"
+                }
+              },
+              "queryRef": "Date.Day",
+              "nativeQueryRef": "day",
+              "displayName": "day"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "No-show Rate"
+                }
+              },
+              "queryRef": "_Measures.No-show Rate",
+              "nativeQueryRef": "rate",
+              "displayName": "rate"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Appointments"
+                }
+              },
+              "queryRef": "_Measures.Appointments",
+              "nativeQueryRef": "appts",
+              "displayName": "appts"
+            }
+          ]
+        }
+      }
+    },
+    "objects": {
+      "vega": [
+        {
+          "properties": {
+            "provider": {
+              "expr": {
+                "Literal": {
+                  "Value": "'vegaLite'"
+                }
+              }
+            },
+            "jsonSpec": {
+              "expr": {
+                "Literal": {
+                  "Value": "'{\"$schema\": \"https://vega.github.io/schema/vega-lite/v5.json\", \"data\": {\"name\": \"dataset\"}, \"width\": \"container\", \"height\": \"container\", \"layer\": [{\"mark\": {\"type\": \"rect\", \"cornerRadius\": 2, \"stroke\": \"#050807\", \"strokeWidth\": 1.4}, \"encoding\": {\"x\": {\"field\": \"wk\", \"type\": \"ordinal\", \"axis\": null}, \"y\": {\"field\": \"dn\", \"type\": \"ordinal\", \"axis\": {\"labelExpr\": \"[''S'',''M'',''T'',''W'',''T'',''F'',''S''][datum.value]\", \"title\": null, \"domain\": false, \"ticks\": false, \"labelColor\": \"#A49DB5\", \"labelFontSize\": 9}}, \"color\": {\"field\": \"rate\", \"type\": \"quantitative\", \"scale\": {\"domain\": [0.2, 0.5], \"range\": [\"#1C1826\", \"#FF5C93\"], \"interpolate\": \"rgb\"}, \"legend\": null}, \"opacity\": {\"condition\": {\"test\": \"datum.__selected__==''off''\", \"value\": 0.25}, \"value\": 1}, \"tooltip\": [{\"field\": \"d\", \"title\": \"Date\", \"type\": \"temporal\"}, {\"field\": \"appts\", \"title\": \"Appointments\"}, {\"field\": \"rate\", \"title\": \"No-show rate\", \"format\": \".1%\"}]}}, {\"transform\": [{\"filter\": \"datum.dom==1\"}], \"mark\": {\"type\": \"text\", \"align\": \"left\", \"dy\": -3, \"fontSize\": 9, \"color\": \"#A49DB5\", \"baseline\": \"bottom\", \"yOffset\": 0}, \"encoding\": {\"x\": {\"field\": \"wk\", \"type\": \"ordinal\", \"axis\": null}, \"y\": {\"value\": 0}, \"text\": {\"field\": \"mon\"}}}]}'"
+                }
+              }
+            },
+            "jsonConfig": {
+              "expr": {
+                "Literal": {
+                  "Value": "'{\"view\": {\"stroke\": \"transparent\"}, \"padding\": {\"left\": 2, \"right\": 2, \"top\": 14, \"bottom\": 2}, \"background\": \"transparent\"}'"
+                }
+              }
+            },
+            "renderMode": {
+              "expr": {
+                "Literal": {
+                  "Value": "'svg'"
+                }
+              }
+            },
+            "enableTooltips": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "version": {
+              "expr": {
+                "Literal": {
+                  "Value": "'6.4.3'"
+                }
+              }
+            },
+            "enableSelection": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "border": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "dropShadow": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeader": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

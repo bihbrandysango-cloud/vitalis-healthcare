@@ -1,0 +1,59 @@
+table Medications
+	lineageTag: 67c14cdc-b525-432c-9072-d4f5357819b3
+
+	column med_id
+		dataType: int64
+		isHidden
+		lineageTag: e9f64a45-8e44-4eee-acfa-aa6445c9b9f2
+		summarizeBy: none
+		sourceColumn: med_id
+
+	column patient_id
+		dataType: int64
+		isHidden
+		lineageTag: 40259089-4059-4135-962a-8f9b1998a219
+		summarizeBy: none
+		sourceColumn: patient_id
+
+	column medication_name
+		dataType: string
+		lineageTag: b85644e3-5db4-4a88-b791-21d62acd6650
+		summarizeBy: none
+		sourceColumn: medication_name
+
+	column dosage
+		dataType: string
+		lineageTag: 1fed93fe-0e7e-4f42-b234-6b45ef6090bc
+		summarizeBy: none
+		sourceColumn: dosage
+
+	column start_date
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 6f96bafa-b33e-4445-8df4-7cd2178a5071
+		summarizeBy: none
+		sourceColumn: start_date
+
+	column end_date
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 3c34f28b-745d-480f-b327-ec68bcd34cdd
+		summarizeBy: none
+		sourceColumn: end_date
+
+	column 'Rx Status' = IF(ISBLANK(Medications[end_date]),"Ongoing","Ended")
+		dataType: string
+		lineageTag: 5e2552f1-fd14-446b-8535-b87d622d364b
+		summarizeBy: none
+
+	partition Medications = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "medications.csv"),[Delimiter=",", Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    H = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    K = Table.SelectColumns(H,{"med_id","patient_id","medication_name","dosage","start_date","end_date"}),
+				    T = Table.TransformColumnTypes(K,{{"med_id", Int64.Type},{"patient_id", Int64.Type},{"medication_name", type text},{"dosage", type text},{"start_date", type date},{"end_date", type date}})
+				in
+				    T
+

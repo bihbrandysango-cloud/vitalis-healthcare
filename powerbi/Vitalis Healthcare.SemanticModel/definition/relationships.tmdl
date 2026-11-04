@@ -1,0 +1,24 @@
+relationship r0
+	fromColumn: Appointments.patient_id
+	toColumn: Patients.patient_id
+
+relationship r1
+	fromColumn: Appointments.doctor_id
+	toColumn: Doctors.doctor_id
+
+relationship r2
+	fromColumn: Appointments.appointment_date
+	toColumn: Date.Date
+
+relationship r3
+	fromColumn: Billing.appointment_id
+	toColumn: Appointments.appointment_id
+
+relationship r4
+	fromColumn: Diagnoses.appointment_id
+	toColumn: Appointments.appointment_id
+
+relationship r5
+	fromColumn: Medications.patient_id
+	toColumn: Patients.patient_id
+

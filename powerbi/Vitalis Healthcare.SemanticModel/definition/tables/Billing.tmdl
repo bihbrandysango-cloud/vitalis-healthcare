@@ -1,0 +1,62 @@
+table Billing
+	lineageTag: f4a50a3e-1cdd-421e-a920-d5abe292ae56
+
+	column bill_id
+		dataType: int64
+		isHidden
+		lineageTag: 132605c1-bbee-4e49-8c0f-193eeab3364e
+		summarizeBy: none
+		sourceColumn: bill_id
+
+	column appointment_id
+		dataType: int64
+		isHidden
+		lineageTag: 27058b55-ea2b-4bf5-8f44-d919cf86f6bb
+		summarizeBy: none
+		sourceColumn: appointment_id
+
+	column amount
+		dataType: double
+		lineageTag: 1c492e54-fd5a-4a59-9926-92daf6066c20
+		summarizeBy: none
+		sourceColumn: amount
+
+	column insurance_covered
+		dataType: double
+		lineageTag: e94078b8-baf1-4689-ad31-b88ad690db76
+		summarizeBy: none
+		sourceColumn: insurance_covered
+
+	column patient_paid
+		dataType: double
+		lineageTag: ded5a55c-0de8-44a3-a51f-cd83dca72d8d
+		summarizeBy: none
+		sourceColumn: patient_paid
+
+	column 'Appointment Status' = RELATED(Appointments[status])
+		dataType: string
+		lineageTag: e3bb1a3e-23ef-4c1e-bcc5-b65a282e9bf0
+		summarizeBy: none
+
+	column 'Coverage Band' = VAR r=DIVIDE(Billing[insurance_covered],Billing[amount]) RETURN IF(r<0.25,"Under 25%",IF(r<0.5,"25-49%",IF(r<0.75,"50-74%","75-100%")))
+		dataType: string
+		lineageTag: 2ce91c56-0e8b-4c65-92bc-1abd1a5757de
+		summarizeBy: none
+		sortByColumn: 'Band Order'
+
+	column 'Band Order' = VAR r=DIVIDE(Billing[insurance_covered],Billing[amount]) RETURN IF(r<0.25,1,IF(r<0.5,2,IF(r<0.75,3,4)))
+		dataType: int64
+		lineageTag: be1adf67-5aea-4989-9c65-400dc69b6582
+		summarizeBy: none
+
+	partition Billing = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "billing.csv"),[Delimiter=",", Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    H = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    K = Table.SelectColumns(H,{"bill_id","appointment_id","amount","insurance_covered","patient_paid"}),
+				    T = Table.TransformColumnTypes(K,{{"bill_id", Int64.Type},{"appointment_id", Int64.Type},{"amount", type number},{"insurance_covered", type number},{"patient_paid", type number}})
+				in
+				    T
+

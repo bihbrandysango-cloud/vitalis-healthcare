@@ -1,0 +1,208 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
+  "name": "v_pat_16",
+  "position": {
+    "x": 338,
+    "y": 100,
+    "z": 1016,
+    "height": 365,
+    "width": 528,
+    "tabOrder": 1016
+  },
+  "visual": {
+    "visualType": "deneb7E15AEF80B9E4D4F8E12924291ECE89A",
+    "query": {
+      "queryState": {
+        "dataset": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Patients"
+                    }
+                  },
+                  "Property": "Age Group"
+                }
+              },
+              "queryRef": "Patients.Age Group",
+              "nativeQueryRef": "g",
+              "displayName": "g"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Patients"
+                    }
+                  },
+                  "Property": "Age Order"
+                }
+              },
+              "queryRef": "Patients.Age Order",
+              "nativeQueryRef": "o",
+              "displayName": "o"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Patients"
+                    }
+                  },
+                  "Property": "Gender"
+                }
+              },
+              "queryRef": "Patients.Gender",
+              "nativeQueryRef": "s",
+              "displayName": "s"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Patients Seen"
+                }
+              },
+              "queryRef": "_Measures.Patients Seen",
+              "nativeQueryRef": "n",
+              "displayName": "n"
+            }
+          ]
+        }
+      }
+    },
+    "objects": {
+      "vega": [
+        {
+          "properties": {
+            "provider": {
+              "expr": {
+                "Literal": {
+                  "Value": "'vegaLite'"
+                }
+              }
+            },
+            "jsonSpec": {
+              "expr": {
+                "Literal": {
+                  "Value": "'{\"$schema\": \"https://vega.github.io/schema/vega-lite/v5.json\", \"data\": {\"name\": \"dataset\"}, \"width\": \"container\", \"height\": \"container\", \"transform\": [{\"calculate\": \"datum.s==''Female''?-datum.n:datum.n\", \"as\": \"x\"}], \"layer\": [{\"mark\": {\"type\": \"bar\", \"cornerRadius\": 3, \"height\": {\"band\": 0.72}}, \"encoding\": {\"y\": {\"field\": \"g\", \"type\": \"nominal\", \"sort\": {\"field\": \"o\", \"op\": \"min\", \"order\": \"descending\"}, \"axis\": {\"title\": null, \"domain\": false, \"ticks\": false, \"labelColor\": \"#C4BFD2\", \"labelFontSize\": 10}}, \"x\": {\"field\": \"x\", \"type\": \"quantitative\", \"axis\": null}, \"color\": {\"field\": \"s\", \"type\": \"nominal\", \"scale\": {\"domain\": [\"Female\", \"Male\"], \"range\": [\"#4DD0E1\", \"#7C5CF5\"]}, \"legend\": {\"orient\": \"top\", \"title\": null, \"labelColor\": \"#C4BFD2\", \"labelFontSize\": 10, \"symbolType\": \"square\"}}, \"opacity\": {\"condition\": {\"test\": \"datum.__selected__==''off''\", \"value\": 0.25}, \"value\": 1}, \"tooltip\": [{\"field\": \"g\", \"title\": \"Age\"}, {\"field\": \"s\", \"title\": \"Gender\"}, {\"field\": \"n\", \"title\": \"Patients\", \"format\": \",\"}]}}, {\"mark\": {\"type\": \"text\", \"fontSize\": 9.5, \"fontWeight\": 700, \"color\": \"#FFFFFF\", \"align\": {\"expr\": \"datum.x<0?''right'':''left''\"}, \"dx\": {\"expr\": \"datum.x<0?-4:4\"}}, \"encoding\": {\"y\": {\"field\": \"g\", \"type\": \"nominal\", \"sort\": {\"field\": \"o\", \"op\": \"min\", \"order\": \"descending\"}}, \"x\": {\"field\": \"x\", \"type\": \"quantitative\", \"axis\": null}, \"text\": {\"field\": \"n\", \"format\": \",\"}}}]}'"
+                }
+              }
+            },
+            "jsonConfig": {
+              "expr": {
+                "Literal": {
+                  "Value": "'{\"view\": {\"stroke\": \"transparent\"}, \"font\": \"Segoe UI\", \"padding\": 0, \"background\": \"transparent\"}'"
+                }
+              }
+            },
+            "renderMode": {
+              "expr": {
+                "Literal": {
+                  "Value": "'svg'"
+                }
+              }
+            },
+            "enableTooltips": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "version": {
+              "expr": {
+                "Literal": {
+                  "Value": "'6.4.3'"
+                }
+              }
+            },
+            "enableSelection": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "border": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "dropShadow": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeader": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

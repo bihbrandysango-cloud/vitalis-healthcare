@@ -1,0 +1,14 @@
+table 'Sim Rebook'
+	lineageTag: e17fce8e-6384-49de-9f37-d7fd37e58c38
+
+	column 'Rebook %'
+		dataType: int64
+		formatString: 0\%
+		lineageTag: c7db4c25-d480-4bd7-991f-9b5bd4403a3d
+		summarizeBy: none
+		sourceColumn: [Value]
+
+	partition 'Sim Rebook' = calculated
+		mode: import
+		source = GENERATESERIES(0,50,10)
+

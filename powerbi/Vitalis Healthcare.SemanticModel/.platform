@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "Vitalis Healthcare"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "ff47a7e7-6a6d-4a17-9924-b80f9abba575"
+  }
+}
