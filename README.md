@@ -4,7 +4,7 @@
 
 **A nine-page Power BI report on five clinics, with a live no-show simulator.**
 
-[**▶ Watch every page (73 seconds)**](https://bihbrandysango-cloud.github.io/projects/vitalis/)
+[**▶ Watch every page (73 seconds)**](https://bihbrandysango-cloud.github.io/projects/vitalis/) · [**📄 Pitch deck (PDF)**](docs/Vitalis-Pitch-Deck.pdf)
 
 </div>
 
@@ -88,7 +88,7 @@ Open [`powerbi/Vitalis Healthcare.pbip`](powerbi/) in Power BI Desktop. Its data
 
 ## Earlier versions
 
-The first version of this project is kept here: [`powerbi/HEALTHCARE_PROJECT.pbix`](powerbi/HEALTHCARE_PROJECT.pbix), the [documentation deck](docs/Vitalis-Project-Documentation.pdf), the [SQL queries](sql/healthcare_queries.sql) and the [React web app](https://bihbrandysango-cloud.github.io/vitalis-healthcare/web/vitalis.html). The earlier deck and old Power BI link show the first report, and some figures there have been corrected above.
+The first version of this project is kept here: [`powerbi/HEALTHCARE_PROJECT.pbix`](powerbi/HEALTHCARE_PROJECT.pbix), the [SQL queries](sql/healthcare_queries.sql) and the [React web app](https://bihbrandysango-cloud.github.io/vitalis-healthcare/web/vitalis.html). The old Power BI link shows the first report, and some of its figures have been corrected above.
 
 ---
 
@@ -103,8 +103,8 @@ vitalis-healthcare/
 ├── .gitignore
 │
 ├── docs/                           Project documentation
-│   ├── Vitalis-Project-Documentation.pdf    ← renders inline on GitHub
-│   ├── Vitalis-Project-Documentation.pptx   ← editable PowerPoint
+│   ├── Vitalis-Pitch-Deck.pdf                ← renders inline on GitHub
+│   ├── Vitalis-Pitch-Deck.pptx               ← editable PowerPoint
 │   └── screenshots/                Dashboard + hero screenshots
 │
 ├── sql/                            SQL deliverable
@@ -217,7 +217,7 @@ This project is licensed under the MIT License — see [**LICENSE**](LICENSE) fo
 **Quick access**
 
 [▶ Watch every page](https://bihbrandysango-cloud.github.io/projects/vitalis/) ·
-[📄 Documentation PDF](docs/Vitalis-Project-Documentation.pdf) ·
+[📄 Pitch deck (PDF)](docs/Vitalis-Pitch-Deck.pdf) ·
 [🌐 Web app source](web/vitalis-source.zip) ·
 [🗄️ SQL queries](sql/healthcare_queries.sql)
 
