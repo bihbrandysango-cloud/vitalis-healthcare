@@ -1,0 +1,171 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
+  "name": "v_cli_16",
+  "position": {
+    "x": 962,
+    "y": 104,
+    "z": 1016,
+    "height": 86,
+    "width": 288,
+    "tabOrder": 1016
+  },
+  "visual": {
+    "visualType": "deneb7E15AEF80B9E4D4F8E12924291ECE89A",
+    "query": {
+      "queryState": {
+        "dataset": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Prescriptions"
+                }
+              },
+              "queryRef": "_Measures.Prescriptions",
+              "nativeQueryRef": "n",
+              "displayName": "n"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Ongoing Share"
+                }
+              },
+              "queryRef": "_Measures.Ongoing Share",
+              "nativeQueryRef": "s",
+              "displayName": "s"
+            }
+          ]
+        }
+      }
+    },
+    "objects": {
+      "vega": [
+        {
+          "properties": {
+            "provider": {
+              "expr": {
+                "Literal": {
+                  "Value": "'vegaLite'"
+                }
+              }
+            },
+            "jsonSpec": {
+              "expr": {
+                "Literal": {
+                  "Value": "'{\"$schema\": \"https://vega.github.io/schema/vega-lite/v5.json\", \"data\": {\"name\": \"dataset\"}, \"width\": \"container\", \"height\": \"container\", \"transform\": [{\"calculate\": \"format(datum.n,'','')\", \"as\": \"tV\"}, {\"calculate\": \"''for 6 medications''\", \"as\": \"tS\"}, {\"calculate\": \"format(datum.s,''.1%'')+'' ongoing''\", \"as\": \"tP\"}, {\"calculate\": \"max(2,min(100,(datum.s)*100))\", \"as\": \"pB\"}], \"layer\": [{\"mark\": {\"type\": \"text\", \"align\": \"left\", \"baseline\": \"middle\", \"fontSize\": 24, \"color\": \"#FFFFFF\", \"fontWeight\": 800, \"font\": \"Segoe UI\"}, \"encoding\": {\"x\": {\"field\": \"_x\", \"type\": \"quantitative\", \"scale\": {\"domain\": [0, 100]}, \"axis\": null}, \"y\": {\"field\": \"_y\", \"type\": \"quantitative\", \"scale\": {\"domain\": [100, 0]}, \"axis\": null}, \"text\": {\"field\": \"tV\"}}, \"transform\": [{\"calculate\": \"2\", \"as\": \"_x\"}, {\"calculate\": \"17\", \"as\": \"_y\"}]}, {\"mark\": {\"type\": \"text\", \"align\": \"left\", \"baseline\": \"middle\", \"fontSize\": 9, \"color\": \"#A49DB5\", \"fontWeight\": 400, \"font\": \"Segoe UI\"}, \"encoding\": {\"x\": {\"field\": \"_x\", \"type\": \"quantitative\", \"scale\": {\"domain\": [0, 100]}, \"axis\": null}, \"y\": {\"field\": \"_y\", \"type\": \"quantitative\", \"scale\": {\"domain\": [100, 0]}, \"axis\": null}, \"text\": {\"field\": \"tS\"}}, \"transform\": [{\"calculate\": \"2\", \"as\": \"_x\"}, {\"calculate\": \"38\", \"as\": \"_y\"}]}, {\"mark\": {\"type\": \"rect\", \"color\": \"#322D3E\", \"cornerRadius\": 2}, \"encoding\": {\"x\": {\"field\": \"_x\", \"type\": \"quantitative\", \"scale\": {\"domain\": [0, 100]}, \"axis\": null}, \"y\": {\"field\": \"_y\", \"type\": \"quantitative\", \"scale\": {\"domain\": [100, 0]}, \"axis\": null}, \"x2\": {\"field\": \"_x2\"}, \"y2\": {\"field\": \"_y2\"}}, \"transform\": [{\"calculate\": \"2\", \"as\": \"_x\"}, {\"calculate\": \"50\", \"as\": \"_y\"}, {\"calculate\": \"98\", \"as\": \"_x2\"}, {\"calculate\": \"55\", \"as\": \"_y2\"}]}, {\"mark\": {\"type\": \"rect\", \"color\": \"#B79CFF\", \"cornerRadius\": 2}, \"encoding\": {\"x\": {\"field\": \"_x\", \"type\": \"quantitative\", \"scale\": {\"domain\": [0, 100]}, \"axis\": null}, \"y\": {\"field\": \"_y\", \"type\": \"quantitative\", \"scale\": {\"domain\": [100, 0]}, \"axis\": null}, \"x2\": {\"field\": \"pB\"}, \"y2\": {\"field\": \"_y2\"}}, \"transform\": [{\"calculate\": \"2\", \"as\": \"_x\"}, {\"calculate\": \"50\", \"as\": \"_y\"}, {\"calculate\": \"55\", \"as\": \"_y2\"}]}, {\"mark\": {\"type\": \"rect\", \"color\": \"#4DD0E1\", \"cornerRadius\": 7}, \"encoding\": {\"x\": {\"field\": \"_x\", \"type\": \"quantitative\", \"scale\": {\"domain\": [0, 100]}, \"axis\": null}, \"y\": {\"field\": \"_y\", \"type\": \"quantitative\", \"scale\": {\"domain\": [100, 0]}, \"axis\": null}, \"x2\": {\"field\": \"_x2\"}, \"y2\": {\"field\": \"_y2\"}}, \"transform\": [{\"calculate\": \"2\", \"as\": \"_x\"}, {\"calculate\": \"65\", \"as\": \"_y\"}, {\"calculate\": \"42\", \"as\": \"_x2\"}, {\"calculate\": \"90\", \"as\": \"_y2\"}]}, {\"mark\": {\"type\": \"text\", \"align\": \"center\", \"baseline\": \"middle\", \"fontSize\": 8.5, \"fontWeight\": 800, \"color\": \"#1B0F3D\", \"font\": \"Segoe UI\"}, \"encoding\": {\"x\": {\"field\": \"_x\", \"type\": \"quantitative\", \"scale\": {\"domain\": [0, 100]}, \"axis\": null}, \"y\": {\"field\": \"_y\", \"type\": \"quantitative\", \"scale\": {\"domain\": [100, 0]}, \"axis\": null}, \"text\": {\"field\": \"tP\"}}, \"transform\": [{\"calculate\": \"22.0\", \"as\": \"_x\"}, {\"calculate\": \"78\", \"as\": \"_y\"}]}]}'"
+                }
+              }
+            },
+            "jsonConfig": {
+              "expr": {
+                "Literal": {
+                  "Value": "'{\"view\": {\"stroke\": \"transparent\"}, \"font\": \"Segoe UI\", \"padding\": 0, \"background\": \"transparent\"}'"
+                }
+              }
+            },
+            "renderMode": {
+              "expr": {
+                "Literal": {
+                  "Value": "'svg'"
+                }
+              }
+            },
+            "enableTooltips": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "version": {
+              "expr": {
+                "Literal": {
+                  "Value": "'6.4.3'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "border": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "dropShadow": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeader": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

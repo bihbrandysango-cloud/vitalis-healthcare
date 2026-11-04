@@ -1,146 +1,94 @@
 <div align="center">
 
-# Vitalis Healthcare Project
+# Vitalis Healthcare
 
-**Healthcare data, transformed into decisions.**
+**A nine-page Power BI report on five clinics, with a live no-show simulator.**
 
-End-to-end healthcare analytics — from raw SQL to a polished React web app.
-
-</div>
-
-![Vitalis web app dashboard](docs/screenshots/hero-web-app.png)
-
-<div align="center">
-
-### 🔗 Live links
-
-[**📊 View Power BI Dashboard (live)**](https://app.powerbi.com/links/SsuRswiz5q?ctid=74283479-689a-49e8-9a3b-d4098db086cb&pbi_source=linkShare) ·
-[**📄 Read Documentation (PDF)**](docs/Vitalis-Project-Documentation.pdf) ·
-[**🗄️ View SQL Queries**](sql/healthcare_queries.sql)
-
-[**🌐 Open the Vitalis web app (live)**](https://bihbrandysango-cloud.github.io/vitalis-healthcare/web/vitalis.html)
+[**▶ Watch every page (73 seconds)**](https://bihbrandysango-cloud.github.io/projects/vitalis/)
 
 </div>
 
----
+[![Vitalis Overview page](docs/screenshots/power-bi/01-overview.jpg)](https://bihbrandysango-cloud.github.io/projects/vitalis/)
 
-> **A note on GitHub previews.** GitHub renders Markdown, PDFs, images, and SQL inline. It does **not** preview PowerPoint, Power BI workbook files, HTML pages, or ZIPs in the browser — those files **download to your computer when you click them**. This is normal. Each link below tells you what to expect.
+> **Synthetic data.** Treat findings as a demonstration of the analysis, not facts about a real clinic.
 
----
+## What is in the report
 
-## Table of Contents
+| Page | What it shows |
+|---|---|
+| Overview | Billing, patients and appointments, by clinic and specialty |
+| Attendance | A no-show calendar for every day, and a Pareto chart of no-shows by doctor |
+| Revenue | Billing by outcome, insurer share, coverage bands and a Play button for the year |
+| Doctors | All 120 doctors, a decomposition tree and a league table |
+| Patients | Age and gender, insurer and home city |
+| Clinical | Conditions by specialty as a heatmap, and medications |
+| Simulator | What cutting no-shows and rebooking cancellations would be worth |
+| Data Trust | Live checks to run before believing the numbers |
+| Findings and Plan | Six findings and six actions |
+| Doctor Profile | A drill-through page for one doctor |
 
-- [About the project](#about-the-project)
-- [Live demos & downloads](#live-demos--downloads)
-- [Headline findings](#headline-findings)
-- [Dashboards](#dashboards)
-- [Repository structure](#repository-structure)
-- [Deployment](#deployment)
-- [Run it locally](#run-it-locally)
-- [Key insights](#key-insights)
-- [Recommendations](#recommendations)
-- [Tech stack](#tech-stack)
-- [Contributing](#contributing)
-- [License](#license)
+Built with Power BI, DAX (61 measures), Power Query and Deneb (calendar, Pareto chart, heatmap, neon cards).
 
----
+### Open it yourself
 
-## About the project
-
-Vitalis is a healthcare analytics project that turns patient, financial, and operational data into actionable insights. It uses a synthetic dataset of **20,000 appointments across 5 clinic locations** to demonstrate three complementary views of the same underlying data:
-
-1. **PostgreSQL queries** that answer business questions for analysts
-2. **Power BI dashboards** that give executives a real-time view of the practice
-3. **A React web app** that mirrors the Power BI experience in a browser
-
-The project is designed to be a portfolio piece: each layer is self-contained, well-documented, and can be reviewed independently.
-
----
-
-## Live demos & downloads
-
-### 📊 Power BI dashboard — live
-
-The interactive Power BI dashboard is published and viewable in your browser:
-
-🔗 **Live link:** https://app.powerbi.com/links/SsuRswiz5q?ctid=74283479-689a-49e8-9a3b-d4098db086cb&pbi_source=linkShare
-
-Click and it opens directly in Power BI. No download, no installation.
-
-Prefer to edit the workbook in Power BI Desktop? Download the raw file:
-[`powerbi/HEALTHCARE_PROJECT.pbix`](powerbi/HEALTHCARE_PROJECT.pbix) (downloads when clicked; ~2 MB)
-
-### 📄 Documentation
-
-| File | Click to… |
-|------|-----------|
-| [`docs/Vitalis-Project-Documentation.pdf`](docs/Vitalis-Project-Documentation.pdf) | ✅ View 14 slides directly on GitHub |
-| [`docs/Vitalis-Project-Documentation.pptx`](docs/Vitalis-Project-Documentation.pptx) | 📥 Download editable PowerPoint |
-
-### 🌐 Vitalis web app
-
-| File | Click to… | Then… |
-|------|-----------|-------|
-| [**Live web app**](https://bihbrandysango-cloud.github.io/vitalis-healthcare/web/vitalis.html) | 🌐 Opens in your browser | Nothing to install |
-| [`web/vitalis.html`](web/vitalis.html) | 📥 Click "Download raw file" top-right of the source view | Double-click the saved file — opens in your browser |
-| [`web/vitalis-source.zip`](web/vitalis-source.zip) | 📥 Download Vite source (74 KB) | Unzip, `npm install`, `npm run dev` |
-| [`web/vitalis-netlify-deploy.zip`](web/vitalis-netlify-deploy.zip) | 📥 Download deployment bundle (217 KB) | See the [Deployment section](#deployment) below |
-
-### 🗄️ SQL queries
-
-[`sql/healthcare_queries.sql`](sql/healthcare_queries.sql) — ✅ renders inline on GitHub with syntax highlighting.
-
----
+Open [`powerbi/Vitalis Healthcare.pbip`](powerbi/) in Power BI Desktop. Its data folder is set to the original computer, so to refresh, change the `DataFolder` parameter to this repo's [`data/`](data/) folder. Deneb and Play Axis are included in the project.
 
 ## Headline findings
 
-| Metric                              | Value         | Note                                                 |
-| ----------------------------------- | ------------- | ---------------------------------------------------- |
-| Total revenue                       | **$6M**       | across 20,000 appointments                           |
-| No-show rate                        | **33%**       | ~6.6K missed appointments — major operational drag   |
-| Top clinic by revenue               | **Seattle**   | $1.43M, ~32% ahead of lowest (Olympia)               |
-| Top specialty by revenue            | **Orthopedics** | $1.19M; Cardiology a close second ($1.12M)        |
-| Patients with hypertension          | **4,921**     | 98% of the active patient base                       |
-| Patients with multiple diagnoses    | **3,533**     | significant chronic care burden                      |
-| Highest-spending age cohort         | **65+**       | $1.80M in billed amount                              |
+| Metric | Value | Note |
+|---|---|---|
+| Appointments | **20,000** | Dec 2024 to Dec 2025, across 5 clinics and 120 doctors |
+| Attended | **33.7%** | 33.2% cancelled, 33.1% no-show |
+| Billed | **$6.31M** | 18,000 bills |
+| Billed on completed visits | **$2.13M** | The other $4.18M sits on cancelled visits and no-shows |
+| Repeat no-show patients | **741** | Three or more no-shows, 38% of all no-shows |
+| Billed per doctor | **$51K to $54K** | Flat across clinics, so clinic size follows headcount |
+| Patients with hypertension | **1,863** | Of 4,443 diagnosed patients |
+| Patients with 2 or more conditions | **3,355** | 75.5% of diagnosed patients |
+
+## Pages
+
+### 1. Overview
+
+![Overview](docs/screenshots/power-bi/01-overview.jpg)
+
+### 2. Attendance
+
+![Attendance](docs/screenshots/power-bi/02-attendance.jpg)
+
+### 3. Revenue
+
+![Revenue](docs/screenshots/power-bi/03-revenue.jpg)
+
+### 4. Doctors
+
+![Doctors](docs/screenshots/power-bi/04-doctors.jpg)
+
+### 5. Patients
+
+![Patients](docs/screenshots/power-bi/05-patients.jpg)
+
+### 6. Clinical
+
+![Clinical](docs/screenshots/power-bi/06-clinical.jpg)
+
+### 7. Simulator
+
+![Simulator](docs/screenshots/power-bi/07-simulator.jpg)
+
+### 8. Data Trust
+
+![Data Trust](docs/screenshots/power-bi/08-data-trust.jpg)
+
+### 9. Findings and Plan
+
+![Findings and Plan](docs/screenshots/power-bi/09-findings-and-plan.jpg)
 
 ---
 
-## Dashboards
+## Earlier versions
 
-Six dashboard pages from the Power BI workbook. Click any image to view full size — or [open the live Power BI](https://app.powerbi.com/links/SsuRswiz5q?ctid=74283479-689a-49e8-9a3b-d4098db086cb&pbi_source=linkShare) to interact with them.
-
-### 1. Patient demographics
-*Who are the patients? Where do they live?*
-
-[![Demographics dashboard](docs/screenshots/01-demographics.jpg)](docs/screenshots/01-demographics.jpg)
-
-### 2. Specialty performance
-*Which medical specialties generate the most revenue and activity?*
-
-[![Specialty dashboard](docs/screenshots/02-specialty.jpg)](docs/screenshots/02-specialty.jpg)
-
-### 3. Diagnosis analysis
-*What conditions do the patients have?*
-
-[![Diagnosis dashboard](docs/screenshots/03-diagnosis.jpg)](docs/screenshots/03-diagnosis.jpg)
-
-### 4. Financial summary
-*How does the money flow through the practice?*
-
-[![Financial dashboard](docs/screenshots/04-financial.jpg)](docs/screenshots/04-financial.jpg)
-
-### 5. Appointment operations
-*How does the practice run day-to-day?*
-
-[![Operations dashboard](docs/screenshots/05-appointments.jpg)](docs/screenshots/05-appointments.jpg)
-
-### 6. Patient population profile
-*How is the patient base distributed across cohorts?*
-
-[![Patient profile dashboard](docs/screenshots/06-patient.jpg)](docs/screenshots/06-patient.jpg)
-
-> 📄 For the full narrative behind each dashboard, see [the documentation PDF](docs/Vitalis-Project-Documentation.pdf).
+The first version of this project is kept here: [`powerbi/HEALTHCARE_PROJECT.pbix`](powerbi/HEALTHCARE_PROJECT.pbix), the [documentation deck](docs/Vitalis-Project-Documentation.pdf), the [SQL queries](sql/healthcare_queries.sql) and the [React web app](https://bihbrandysango-cloud.github.io/vitalis-healthcare/web/vitalis.html). The earlier deck and old Power BI link show the first report, and some figures there have been corrected above.
 
 ---
 
@@ -175,9 +123,9 @@ vitalis-healthcare/
 
 ## Deployment
 
-### Power BI dashboard — already deployed ✅
+### First Power BI report — already deployed ✅
 
-The Power BI report is published and live at:
+The first version of the report is live at:
 https://app.powerbi.com/links/SsuRswiz5q?ctid=74283479-689a-49e8-9a3b-d4098db086cb&pbi_source=linkShare
 
 ### Web app — already deployed ✅
@@ -201,7 +149,7 @@ cd vitalis-healthcare
 # 2. SQL — load schema and queries into PostgreSQL
 psql -d your_database -f sql/healthcare_queries.sql
 
-# 3. Power BI — double-click powerbi/HEALTHCARE_PROJECT.pbix
+# 3. Power BI — open powerbi/Vitalis Healthcare.pbip
 
 # 4. Web app dev server
 unzip web/vitalis-source.zip -d web/vitalis
@@ -215,29 +163,28 @@ npm run dev
 
 ## Key insights
 
-1. **Revenue concentration.** Seattle generates 24% of total revenue ($1.43M). The bottom clinic (Olympia) generates 18%. Closing the gap is a $350K opportunity per location.
+1. **Two in three visits do not happen.** Only 33.7% of 20,000 appointments were completed.
 
-2. **No-show rate is the biggest operational drag.** 33% of appointments are missed. Automated reminders typically cut this by ~30%, recovering significant capacity.
+2. **Only a third of billing is on completed visits.** $2.13M of $6.31M. A real practice would audit the other $4.18M before calling it revenue.
 
-3. **Chronic conditions dominate.** 4,921 of 5,000 patients carry a hypertension diagnosis. 3,533 carry more than one chronic condition. Coordinated care programs would reduce repeat visits and complications.
+3. **Repeat no-shows are a clear target.** 741 patients with three or more no-shows account for 38% of all no-shows.
 
-4. **High-margin specialties.** Orthopedics ($1.19M) and Cardiology ($1.12M) together drive 39% of revenue. Capacity expansion here yields more than expanding lower-margin General Medicine ($0.66M).
+4. **Clinic size follows headcount.** Seattle bills $1.43M with 28 doctors and Olympia $1.08M with 20, but billing per doctor is about the same.
 
-5. **Aging population skews cost.** Patients aged 65+ generate $1.80M in billed amount — the highest of any age group. Preventive screening programs reduce long-term cost.
+5. **Most diagnosed patients have several conditions.** 3,355 of 4,443 have two or more, and 1,863 have hypertension.
 
 ---
 
 ## Recommendations
 
-| Priority | Action                                  | Expected impact                                    |
-| -------- | --------------------------------------- | -------------------------------------------------- |
-| 01       | Reduce no-show rates                    | Recover capacity through SMS/email reminders       |
-| 02       | Strengthen chronic disease management   | Fewer repeat visits, better outcomes               |
-| 03       | Invest in Orthopedics + Cardiology      | Sustain and grow the highest-revenue specialties   |
-| 04       | Audit lower-revenue locations           | Close the gap with Seattle                         |
-| 05       | Expand preventive care for 65+          | Manage long-term cost, improve outcomes            |
-
-Full discussion in [the documentation deck](docs/Vitalis-Project-Documentation.pdf).
+| Priority | Action | Why |
+| -------- | ------ | --- |
+| High | Audit billing on missed visits | $4.18M is billed on cancelled visits and no-shows |
+| High | Target repeat no-show patients | 741 patients drive 38% of no-shows |
+| High | Rebook cancellations automatically | One in three bookings is cancelled |
+| Medium | Fix one bill per visit | Some appointments carry several bills, and 40.2% of completed visits have none |
+| Medium | Clean specialty routing | 79.7% of pediatric visits are adults |
+| Later | Add cost data | The data can show billing but not profit |
 
 ---
 
@@ -246,7 +193,7 @@ Full discussion in [the documentation deck](docs/Vitalis-Project-Documentation.p
 | Layer            | Technologies                                                |
 | ---------------- | ----------------------------------------------------------- |
 | **Data**         | PostgreSQL 14+                                              |
-| **Analytics**    | Power BI Desktop + Power BI Service                         |
+| **Analytics**    | Power BI Desktop, DAX, Power Query, Deneb                   |
 | **Web app**      | React 18, Vite 5, Tailwind CSS, Recharts, Framer Motion     |
 | **Persistence**  | LocalStorage (web app), file-based (.pbix, .sql)            |
 | **Tooling**      | npm, Git                                                    |
@@ -269,7 +216,7 @@ This project is licensed under the MIT License — see [**LICENSE**](LICENSE) fo
 
 **Quick access**
 
-[📊 Live Power BI](https://app.powerbi.com/links/SsuRswiz5q?ctid=74283479-689a-49e8-9a3b-d4098db086cb&pbi_source=linkShare) ·
+[▶ Watch every page](https://bihbrandysango-cloud.github.io/projects/vitalis/) ·
 [📄 Documentation PDF](docs/Vitalis-Project-Documentation.pdf) ·
 [🌐 Web app source](web/vitalis-source.zip) ·
 [🗄️ SQL queries](sql/healthcare_queries.sql)

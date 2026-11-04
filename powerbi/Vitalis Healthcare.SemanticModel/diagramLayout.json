@@ -1,0 +1,152 @@
+{
+  "version": "1.1.0",
+  "diagrams": [
+    {
+      "ordinal": 0,
+      "scrollPosition": {
+        "x": 0,
+        "y": 0
+      },
+      "nodes": [
+        {
+          "location": {
+            "x": 1150.4750647091523,
+            "y": 329.69070235427284
+          },
+          "nodeIndex": "_Measures",
+          "nodeLineageTag": "f979c53f-725e-40df-ae3b-a4d4a5a21486",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 626.55128240862439,
+            "y": 225.7720124045012
+          },
+          "nodeIndex": "Appointments",
+          "nodeLineageTag": "5018feea-717a-467a-ac9e-dea6cb0cc82c",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 728.174384573545,
+            "y": 477.35470757990379
+          },
+          "nodeIndex": "Billing",
+          "nodeLineageTag": "2a1d5e35-0d48-46d9-8975-cf6cc891f23e",
+          "size": {
+            "height": 272,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 438.24005474496607,
+            "y": 637.38140470854569
+          },
+          "nodeIndex": "Date",
+          "nodeLineageTag": "5fa43c8f-da25-4d1a-9033-c80217ca9c33",
+          "size": {
+            "height": 272,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 412.60469270207545,
+            "y": -50
+          },
+          "nodeIndex": "Diagnoses",
+          "nodeLineageTag": "983120e8-dedb-4410-b1ed-bee783344141",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 916.47506470915232,
+            "y": 31.100794946088058
+          },
+          "nodeIndex": "Doctors",
+          "nodeLineageTag": "ee8d0009-a7f0-4e01-8fd2-44bbbda9ecfb",
+          "size": {
+            "height": 176,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 339.17723804461832,
+            "y": 204.766354580991
+          },
+          "nodeIndex": "Medications",
+          "nodeLineageTag": "e91ac2ab-f0a1-48cd-b199-9505bb986333",
+          "size": {
+            "height": 248,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 50,
+            "y": 243.31315814803014
+          },
+          "nodeIndex": "Patients",
+          "nodeLineageTag": "5fe27e06-33ee-4f26-a616-7cd6920c797a",
+          "size": {
+            "height": 296,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1434.4750647091523,
+            "y": 379.69070235427284
+          },
+          "nodeIndex": "Sim Cut",
+          "nodeLineageTag": "d66f30fd-0903-48eb-858c-ef5d387a2d5d",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1718.4750647091523,
+            "y": 379.69070235427284
+          },
+          "nodeIndex": "Sim Rebook",
+          "nodeLineageTag": "c529905b-ef3d-4679-8a8c-128d6c33e29e",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 0
+        }
+      ],
+      "name": "All tables",
+      "zoomValue": 100,
+      "pinKeyFieldsToTop": false,
+      "showExtraHeaderInfo": false,
+      "hideKeyFieldsWhenCollapsed": false,
+      "tablesLocked": false
+    }
+  ],
+  "selectedDiagram": "All tables",
+  "defaultDiagram": "All tables"
+}

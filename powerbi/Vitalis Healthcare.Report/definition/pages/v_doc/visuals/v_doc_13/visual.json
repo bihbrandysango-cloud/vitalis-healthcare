@@ -1,0 +1,356 @@
+{
+ "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
+ "name": "v_doc_13",
+ "position": {
+  "x": 30,
+  "y": 100,
+  "z": 1013,
+  "height": 289,
+  "width": 608,
+  "tabOrder": 1013
+ },
+ "visual": {
+  "visualType": "scatterChart",
+  "query": {
+   "queryState": {
+    "Category": {
+     "projections": [
+      {
+       "field": {
+        "Column": {
+         "Expression": {
+          "SourceRef": {
+           "Entity": "Doctors"
+          }
+         },
+         "Property": "doctor_name"
+        }
+       },
+       "queryRef": "Doctors.doctor_name",
+       "nativeQueryRef": "doctor_name",
+       "active": true
+      }
+     ]
+    },
+    "Series": {
+     "projections": [
+      {
+       "field": {
+        "Column": {
+         "Expression": {
+          "SourceRef": {
+           "Entity": "Doctors"
+          }
+         },
+         "Property": "clinic_location"
+        }
+       },
+       "queryRef": "Doctors.clinic_location",
+       "nativeQueryRef": "clinic_location"
+      }
+     ]
+    },
+    "Size": {
+     "projections": [
+      {
+       "field": {
+        "Measure": {
+         "Expression": {
+          "SourceRef": {
+           "Entity": "_Measures"
+          }
+         },
+         "Property": "Billed"
+        }
+       },
+       "queryRef": "_Measures.Billed",
+       "nativeQueryRef": "Billed"
+      }
+     ]
+    },
+    "X": {
+     "projections": [
+      {
+       "field": {
+        "Measure": {
+         "Expression": {
+          "SourceRef": {
+           "Entity": "_Measures"
+          }
+         },
+         "Property": "Appointments"
+        }
+       },
+       "queryRef": "_Measures.Appointments",
+       "nativeQueryRef": "Appointments",
+       "active": true
+      }
+     ]
+    },
+    "Y": {
+     "projections": [
+      {
+       "field": {
+        "Measure": {
+         "Expression": {
+          "SourceRef": {
+           "Entity": "_Measures"
+          }
+         },
+         "Property": "No-show Rate"
+        }
+       },
+       "queryRef": "_Measures.No-show Rate",
+       "nativeQueryRef": "No-show Rate"
+      }
+     ]
+    }
+   }
+  },
+  "objects": {
+   "categoryAxis": [
+    {
+     "properties": {
+      "labelColor": {
+       "solid": {
+        "color": {
+         "expr": {
+          "Literal": {
+           "Value": "'#A49DB5'"
+          }
+         }
+        }
+       }
+      },
+      "fontSize": {
+       "expr": {
+        "Literal": {
+         "Value": "9D"
+        }
+       }
+      },
+      "gridlineShow": {
+       "expr": {
+        "Literal": {
+         "Value": "false"
+        }
+       }
+      },
+      "show": {
+       "expr": {
+        "Literal": {
+         "Value": "true"
+        }
+       }
+      },
+      "showAxisTitle": {
+       "expr": {
+        "Literal": {
+         "Value": "true"
+        }
+       }
+      },
+      "titleColor": {
+       "solid": {
+        "color": {
+         "expr": {
+          "Literal": {
+           "Value": "'#A49DB5'"
+          }
+         }
+        }
+       }
+      },
+      "titleFontSize": {
+       "expr": {
+        "Literal": {
+         "Value": "9D"
+        }
+       }
+      }
+     }
+    }
+   ],
+   "valueAxis": [
+    {
+     "properties": {
+      "labelColor": {
+       "solid": {
+        "color": {
+         "expr": {
+          "Literal": {
+           "Value": "'#A49DB5'"
+          }
+         }
+        }
+       }
+      },
+      "fontSize": {
+       "expr": {
+        "Literal": {
+         "Value": "9D"
+        }
+       }
+      },
+      "gridlineColor": {
+       "solid": {
+        "color": {
+         "expr": {
+          "Literal": {
+           "Value": "'#322D3E'"
+          }
+         }
+        }
+       }
+      },
+      "show": {
+       "expr": {
+        "Literal": {
+         "Value": "true"
+        }
+       }
+      },
+      "showAxisTitle": {
+       "expr": {
+        "Literal": {
+         "Value": "true"
+        }
+       }
+      },
+      "titleColor": {
+       "solid": {
+        "color": {
+         "expr": {
+          "Literal": {
+           "Value": "'#A49DB5'"
+          }
+         }
+        }
+       }
+      },
+      "titleFontSize": {
+       "expr": {
+        "Literal": {
+         "Value": "9D"
+        }
+       }
+      }
+     }
+    }
+   ],
+   "legend": [
+    {
+     "properties": {
+      "show": {
+       "expr": {
+        "Literal": {
+         "Value": "true"
+        }
+       }
+      },
+      "position": {
+       "expr": {
+        "Literal": {
+         "Value": "'Top'"
+        }
+       }
+      },
+      "labelColor": {
+       "solid": {
+        "color": {
+         "expr": {
+          "Literal": {
+           "Value": "'#C4BFD2'"
+          }
+         }
+        }
+       }
+      },
+      "fontSize": {
+       "expr": {
+        "Literal": {
+         "Value": "9D"
+        }
+       }
+      },
+      "showTitle": {
+       "expr": {
+        "Literal": {
+         "Value": "false"
+        }
+       }
+      }
+     }
+    }
+   ],
+   "bubbles": [
+    {
+     "properties": {
+      "bubbleSize": {
+       "expr": {
+        "Literal": {
+         "Value": "-14D"
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  "visualContainerObjects": {
+   "background": [
+    {
+     "properties": {
+      "show": {
+       "expr": {
+        "Literal": {
+         "Value": "false"
+        }
+       }
+      }
+     }
+    }
+   ],
+   "border": [
+    {
+     "properties": {
+      "show": {
+       "expr": {
+        "Literal": {
+         "Value": "false"
+        }
+       }
+      }
+     }
+    }
+   ],
+   "title": [
+    {
+     "properties": {
+      "show": {
+       "expr": {
+        "Literal": {
+         "Value": "false"
+        }
+       }
+      }
+     }
+    }
+   ],
+   "dropShadow": [
+    {
+     "properties": {
+      "show": {
+       "expr": {
+        "Literal": {
+         "Value": "false"
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  "drillFilterOtherVisuals": true
+ }
+}

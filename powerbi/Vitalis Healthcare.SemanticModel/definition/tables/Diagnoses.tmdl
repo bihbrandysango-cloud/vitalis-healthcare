@@ -1,0 +1,44 @@
+table Diagnoses
+	lineageTag: 1f5da27d-53b5-4d2b-a3bd-46dee11ec189
+
+	column diagnosis_id
+		dataType: int64
+		isHidden
+		lineageTag: c655633d-1e72-4504-b4c2-6b78b72c904e
+		summarizeBy: none
+		sourceColumn: diagnosis_id
+
+	column appointment_id
+		dataType: int64
+		isHidden
+		lineageTag: f2e7ad35-db0a-49cb-bf58-63a0585be937
+		summarizeBy: none
+		sourceColumn: appointment_id
+
+	column diagnosis_code
+		dataType: string
+		lineageTag: d1c3bc73-2554-441d-9ec3-81ebf87d5ba4
+		summarizeBy: none
+		sourceColumn: diagnosis_code
+
+	column patient_id = RELATED(Appointments[patient_id])
+		dataType: int64
+		lineageTag: 63f551b8-1373-4e42-a4fc-32fbd110dccc
+		summarizeBy: none
+
+	column Condition = SWITCH(Diagnoses[diagnosis_code],"E03","Hypothyroidism","E11","Type 2 diabetes","G43","Migraine","I10","Hypertension","I20","Angina","R07","Chest pain",Diagnoses[diagnosis_code])
+		dataType: string
+		lineageTag: 47d9fac4-8d86-4ea6-b6d2-cbb130fff138
+		summarizeBy: none
+
+	partition Diagnoses = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "diagnoses.csv"),[Delimiter=",", Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    H = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    K = Table.SelectColumns(H,{"diagnosis_id","appointment_id","diagnosis_code"}),
+				    T = Table.TransformColumnTypes(K,{{"diagnosis_id", Int64.Type},{"appointment_id", Int64.Type},{"diagnosis_code", type text}})
+				in
+				    T
+

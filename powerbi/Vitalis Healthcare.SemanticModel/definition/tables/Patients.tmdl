@@ -1,0 +1,68 @@
+table Patients
+	lineageTag: ab7a803e-23ec-4561-8ae4-5af55463d2de
+
+	column patient_id
+		dataType: int64
+		isHidden
+		lineageTag: 9fb08436-752b-43d6-8424-863ebb66b272
+		summarizeBy: none
+		sourceColumn: patient_id
+
+	column gender_code
+		dataType: string
+		lineageTag: 5f1700e2-3bd7-4cee-9485-58b6adeab467
+		summarizeBy: none
+		sourceColumn: gender_code
+
+	column date_of_birth
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 018b02b3-0e09-447f-bb34-3cee8afca4b9
+		summarizeBy: none
+		sourceColumn: date_of_birth
+
+	column city
+		dataType: string
+		lineageTag: 12338c47-b5be-4bda-8036-cdc8ce2bdbb3
+		summarizeBy: none
+		sourceColumn: city
+
+	column insurance_provider
+		dataType: string
+		lineageTag: 06c5b26e-842e-405a-8858-e76007fc9f6b
+		summarizeBy: none
+		sourceColumn: insurance_provider
+
+	column Age = INT(DATEDIFF(Patients[date_of_birth],DATE(2025,12,4),DAY)/365.25)
+		dataType: int64
+		lineageTag: dc2c38c6-dd8c-4015-a1bc-2da8ba158716
+		summarizeBy: none
+
+	column 'Age Group' = VAR a=Patients[Age] RETURN IF(a<18,"Under 18",IF(a<36,"18-35",IF(a<51,"36-50",IF(a<66,"51-65","65+"))))
+		dataType: string
+		lineageTag: 7224e657-2a2b-4e62-b68c-a8a4e4cefbfe
+		summarizeBy: none
+		sortByColumn: 'Age Order'
+
+	column 'Age Order' = VAR a=Patients[Age] RETURN IF(a<18,1,IF(a<36,2,IF(a<51,3,IF(a<66,4,5))))
+		dataType: int64
+		lineageTag: 300b3156-ee34-428f-8f2d-d61583de99a2
+		summarizeBy: none
+
+	column Gender = IF(Patients[gender_code]="F","Female","Male")
+		dataType: string
+		lineageTag: f347cf5b-74b1-48a3-8bc2-36bd26577dfc
+		summarizeBy: none
+
+	partition Patients = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "patients.csv"),[Delimiter=",", Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    H = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    K = Table.SelectColumns(H,{"patient_id","gender","date_of_birth","city","insurance_provider"}),
+				    T = Table.TransformColumnTypes(K,{{"patient_id", Int64.Type},{"gender", type text},{"date_of_birth", type date},{"city", type text},{"insurance_provider", type text}}),
+				    R = Table.RenameColumns(T,{{"gender","gender_code"}})
+				in
+				    R
+

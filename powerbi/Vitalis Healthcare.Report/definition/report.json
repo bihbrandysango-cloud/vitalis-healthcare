@@ -1,0 +1,138 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/report/3.3.0/schema.json",
+  "themeCollection": {
+    "baseTheme": {
+      "name": "CY24SU10",
+      "reportVersionAtImport": {
+        "visual": "1.8.95",
+        "report": "2.0.95",
+        "page": "1.3.95"
+      },
+      "type": "SharedResources"
+    },
+    "customTheme": {
+      "name": "VitalisNeon.json",
+      "reportVersionAtImport": {
+        "visual": "2.1.0",
+        "report": "2.1.0",
+        "page": "2.0.0"
+      },
+      "type": "RegisteredResources"
+    }
+  },
+  "objects": {
+    "section": [
+      {
+        "properties": {
+          "verticalAlignment": {
+            "expr": {
+              "Literal": {
+                "Value": "'Top'"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "outspacePane": [
+      {
+        "properties": {
+          "expanded": {
+            "expr": {
+              "Literal": {
+                "Value": "false"
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "publicCustomVisuals": [
+    "deneb7E15AEF80B9E4D4F8E12924291ECE89A",
+    "PBI_CV_16948668_E17D_454B_8664_2F2C470EA8C1"
+  ],
+  "resourcePackages": [
+    {
+      "name": "SharedResources",
+      "type": "SharedResources",
+      "items": [
+        {
+          "name": "CY24SU10",
+          "path": "BaseThemes/CY24SU10.json",
+          "type": "BaseTheme"
+        }
+      ]
+    },
+    {
+      "name": "RegisteredResources",
+      "type": "RegisteredResources",
+      "items": [
+        {
+          "name": "v_att.png",
+          "path": "v_att.png",
+          "type": "Image"
+        },
+        {
+          "name": "v_cli.png",
+          "path": "v_cli.png",
+          "type": "Image"
+        },
+        {
+          "name": "v_doc.png",
+          "path": "v_doc.png",
+          "type": "Image"
+        },
+        {
+          "name": "v_dt.png",
+          "path": "v_dt.png",
+          "type": "Image"
+        },
+        {
+          "name": "v_over.png",
+          "path": "v_over.png",
+          "type": "Image"
+        },
+        {
+          "name": "v_pat.png",
+          "path": "v_pat.png",
+          "type": "Image"
+        },
+        {
+          "name": "v_pln.png",
+          "path": "v_pln.png",
+          "type": "Image"
+        },
+        {
+          "name": "v_rev.png",
+          "path": "v_rev.png",
+          "type": "Image"
+        },
+        {
+          "name": "v_sim.png",
+          "path": "v_sim.png",
+          "type": "Image"
+        },
+        {
+          "name": "v_tru.png",
+          "path": "v_tru.png",
+          "type": "Image"
+        },
+        {
+          "name": "VitalisNeon.json",
+          "path": "VitalisNeon.json",
+          "type": "CustomTheme"
+        }
+      ]
+    }
+  ],
+  "settings": {
+    "useStylableVisualContainerHeader": true,
+    "exportDataMode": "AllowSummarized",
+    "defaultDrillFilterOtherVisuals": true,
+    "allowChangeFilterTypes": true,
+    "useEnhancedTooltips": true,
+    "filterPaneHiddenInEditMode": true,
+    "useDefaultAggregateDisplayName": true
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Report",
+    "displayName": "Vitalis Healthcare"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "c3a0b80d-b163-4f8f-b306-b6494592bca7"
+  }
+}

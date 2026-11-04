@@ -1,0 +1,74 @@
+table Date
+	lineageTag: 6a77ea99-5759-454e-91d1-76b020a3e53d
+	dataCategory: Time
+
+	column Date
+		dataType: dateTime
+		isKey
+		formatString: Short Date
+		lineageTag: ddbcfff4-3e78-4c68-89ec-564ed53b4e4b
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Date]
+
+	column Month
+		dataType: string
+		lineageTag: 5f016788-df32-475b-b993-8c65977f75e6
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Month]
+		sortByColumn: MonthStart
+
+	column MonthStart
+		dataType: dateTime
+		isHidden
+		formatString: Short Date
+		lineageTag: 5fc769a8-8a61-4805-88d9-bb8fd9ae05d7
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [MonthStart]
+
+	column Day
+		dataType: string
+		lineageTag: 91757305-9f4f-452d-850f-77f20803d1f3
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Day]
+		sortByColumn: DayNo
+
+	column DayNo
+		dataType: int64
+		isHidden
+		lineageTag: c066d6bc-42c8-45a9-b1cc-642c89bf1c9a
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [DayNo]
+
+	column DayOfMonth
+		dataType: int64
+		isHidden
+		lineageTag: bf63d519-04cf-4e8b-86cd-a1ad71991fa4
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [DayOfMonth]
+
+	column WeekIdx
+		dataType: int64
+		isHidden
+		lineageTag: d7ab0227-2a2a-49be-9b6f-b715796a3ae4
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [WeekIdx]
+
+	column MonShort
+		dataType: string
+		isHidden
+		lineageTag: 37257b39-957c-475f-a5ce-482aa4c9fb17
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [MonShort]
+
+	partition Date = calculated
+		mode: import
+		source = ADDCOLUMNS(CALENDAR(DATE(2024,12,4),DATE(2025,12,4)),"Month",FORMAT([Date],"mmm yyyy"),"MonthStart",DATE(YEAR([Date]),MONTH([Date]),1),"Day",FORMAT([Date],"ddd"),"DayNo",WEEKDAY([Date],1)-1,"DayOfMonth",DAY([Date]),"WeekIdx",INT(([Date]-DATE(2024,12,1))/7),"MonShort",FORMAT([Date],"mmm"))
+

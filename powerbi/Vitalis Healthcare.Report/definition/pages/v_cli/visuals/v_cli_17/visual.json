@@ -1,0 +1,193 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
+  "name": "v_cli_17",
+  "position": {
+    "x": 30,
+    "y": 238,
+    "z": 1017,
+    "height": 463,
+    "width": 788,
+    "tabOrder": 1017
+  },
+  "visual": {
+    "visualType": "deneb7E15AEF80B9E4D4F8E12924291ECE89A",
+    "query": {
+      "queryState": {
+        "dataset": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Doctors"
+                    }
+                  },
+                  "Property": "specialty"
+                }
+              },
+              "queryRef": "Doctors.specialty",
+              "nativeQueryRef": "sp",
+              "displayName": "sp"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Diagnoses"
+                    }
+                  },
+                  "Property": "Condition"
+                }
+              },
+              "queryRef": "Diagnoses.Condition",
+              "nativeQueryRef": "cd",
+              "displayName": "cd"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Diagnoses Logged"
+                }
+              },
+              "queryRef": "_Measures.Diagnoses Logged",
+              "nativeQueryRef": "n",
+              "displayName": "n"
+            }
+          ]
+        }
+      }
+    },
+    "objects": {
+      "vega": [
+        {
+          "properties": {
+            "provider": {
+              "expr": {
+                "Literal": {
+                  "Value": "'vegaLite'"
+                }
+              }
+            },
+            "jsonSpec": {
+              "expr": {
+                "Literal": {
+                  "Value": "'{\"$schema\": \"https://vega.github.io/schema/vega-lite/v5.json\", \"data\": {\"name\": \"dataset\"}, \"width\": \"container\", \"height\": \"container\", \"layer\": [{\"mark\": {\"type\": \"rect\", \"cornerRadius\": 3, \"stroke\": \"#17151F\", \"strokeWidth\": 2}, \"encoding\": {\"x\": {\"field\": \"cd\", \"type\": \"nominal\", \"axis\": {\"title\": null, \"orient\": \"top\", \"labelAngle\": 0, \"domain\": false, \"ticks\": false, \"labelColor\": \"#C4BFD2\", \"labelFontSize\": 9.5}}, \"y\": {\"field\": \"sp\", \"type\": \"nominal\", \"axis\": {\"title\": null, \"domain\": false, \"ticks\": false, \"labelColor\": \"#C4BFD2\", \"labelFontSize\": 9.5}}, \"color\": {\"field\": \"n\", \"type\": \"quantitative\", \"scale\": {\"range\": [\"#2A2147\", \"#B79CFF\"]}, \"legend\": null}, \"opacity\": {\"condition\": {\"test\": \"datum.__selected__==''off''\", \"value\": 0.25}, \"value\": 1}, \"tooltip\": [{\"field\": \"sp\", \"title\": \"Specialty\"}, {\"field\": \"cd\", \"title\": \"Condition\"}, {\"field\": \"n\", \"title\": \"Diagnoses\", \"format\": \",\"}]}}, {\"mark\": {\"type\": \"text\", \"fontSize\": 10, \"fontWeight\": 700}, \"encoding\": {\"x\": {\"field\": \"cd\", \"type\": \"nominal\"}, \"y\": {\"field\": \"sp\", \"type\": \"nominal\"}, \"text\": {\"field\": \"n\", \"format\": \",\"}, \"color\": {\"condition\": {\"test\": \"datum.n>400\", \"value\": \"#1B0F3D\"}, \"value\": \"#EDEBF3\"}}}]}'"
+                }
+              }
+            },
+            "jsonConfig": {
+              "expr": {
+                "Literal": {
+                  "Value": "'{\"view\": {\"stroke\": \"transparent\"}, \"padding\": {\"left\": 2, \"right\": 2, \"top\": 8, \"bottom\": 2}, \"background\": \"transparent\"}'"
+                }
+              }
+            },
+            "renderMode": {
+              "expr": {
+                "Literal": {
+                  "Value": "'svg'"
+                }
+              }
+            },
+            "enableTooltips": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "version": {
+              "expr": {
+                "Literal": {
+                  "Value": "'6.4.3'"
+                }
+              }
+            },
+            "enableSelection": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "border": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "dropShadow": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeader": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

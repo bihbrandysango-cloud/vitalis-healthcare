@@ -1,0 +1,256 @@
+table _Measures
+	lineageTag: 8349a8bb-3252-4e17-b8d9-0b3e3db11c54
+
+	measure Appointments = COUNTROWS(Appointments)
+		formatString: #,0
+		lineageTag: a97a1719-775c-4aa8-b2fc-5251ff924394
+
+	measure Completed = CALCULATE([Appointments],KEEPFILTERS(Appointments[status]="Completed"))
+		formatString: #,0
+		lineageTag: 89296dc7-9f2e-443d-a231-5653ba7466ee
+
+	measure Cancelled = CALCULATE([Appointments],KEEPFILTERS(Appointments[status]="Cancelled"))
+		formatString: #,0
+		lineageTag: 8de43cc2-454b-45ab-b454-b62d278f5a39
+
+	measure No-shows = CALCULATE([Appointments],KEEPFILTERS(Appointments[status]="No-show"))
+		formatString: #,0
+		lineageTag: 4f6f0c06-4998-4319-89fe-765b7bbc587d
+
+	measure 'Attendance Rate' = DIVIDE([Completed],[Appointments])
+		formatString: 0.0%
+		lineageTag: 681ebfdd-d1b5-4833-be22-71eab1e92af9
+
+	measure 'No-show Rate' = DIVIDE([No-shows],[Appointments])
+		formatString: 0.0%
+		lineageTag: c73f542c-332b-42b7-886d-c7ad226ec859
+
+	measure 'Cancel Rate' = DIVIDE([Cancelled],[Appointments])
+		formatString: 0.0%
+		lineageTag: efe537c3-0170-4f7f-ab5a-d1c8911d2f82
+
+	measure 'Patients Seen' = DISTINCTCOUNT(Appointments[patient_id])
+		formatString: #,0
+		lineageTag: 014bdf8a-0f94-4ff8-b013-5d3ab8ccc30f
+
+	measure 'Total Patients' = COUNTROWS(ALL(Patients))
+		formatString: #,0
+		lineageTag: 9ae1605a-72b2-4e96-b979-ef1c836f364a
+
+	measure 'Active Share' = DIVIDE([Patients Seen],[Total Patients])
+		formatString: 0.0%
+		lineageTag: 23b0c3bf-41f5-45fc-8557-2bf3b8b628ed
+
+	measure 'Doctors Active' = DISTINCTCOUNT(Appointments[doctor_id])
+		formatString: #,0
+		lineageTag: 7714fe2f-205b-4c10-aa8f-2a4f9be06766
+
+	measure Billed = SUM(Billing[amount])
+		formatString: \$#,0
+		lineageTag: b376fa2e-2954-4adc-9062-4e74b084926e
+
+	measure 'Insurance Paid' = SUM(Billing[insurance_covered])
+		formatString: \$#,0
+		lineageTag: 68a23c9c-2ea8-4080-824c-96678ddd9e1e
+
+	measure 'Patient Paid' = SUM(Billing[patient_paid])
+		formatString: \$#,0
+		lineageTag: cb5dd8b5-2c72-4472-a037-d39993797e80
+
+	measure Coverage = DIVIDE([Insurance Paid],[Billed])
+		formatString: 0.0%
+		lineageTag: b03c8d03-05b8-4246-8bed-d9b09addb53d
+
+	measure 'Patient Share' = DIVIDE([Patient Paid],[Billed])
+		formatString: 0.0%
+		lineageTag: 6ce4af83-cb7d-43ba-8675-f755df6092d3
+
+	measure Bills = COUNTROWS(Billing)
+		formatString: #,0
+		lineageTag: 937977cc-8ee0-4919-98c4-8cae5c284668
+
+	measure 'Avg Bill' = DIVIDE([Billed],[Bills])
+		formatString: \$#,0
+		lineageTag: 5cf11f16-4918-4723-a74b-9ca7131e87ce
+
+	measure 'Billed Completed' = CALCULATE([Billed],KEEPFILTERS(Appointments[status]="Completed"))
+		formatString: \$#,0
+		lineageTag: d3b804bd-2375-40f3-a6a6-d18187c9cc31
+
+	measure 'Billed Cancelled' = CALCULATE([Billed],KEEPFILTERS(Appointments[status]="Cancelled"))
+		formatString: \$#,0
+		lineageTag: 059c93c9-d440-4810-8b9f-c66575fcd736
+
+	measure 'Billed No-show' = CALCULATE([Billed],KEEPFILTERS(Appointments[status]="No-show"))
+		formatString: \$#,0
+		lineageTag: 677a1708-556e-4d73-9fea-784ce86e77d2
+
+	measure 'Billed Not Completed' = [Billed Cancelled]+[Billed No-show]
+		formatString: \$#,0
+		lineageTag: 7ab88406-ad65-41c9-8d62-f34cb466338c
+
+	measure 'Completed Share of Billed' = DIVIDE([Billed Completed],[Billed])
+		formatString: 0.0%
+		lineageTag: 7e3711c6-a244-42a7-9356-8594a9f2b83c
+
+	measure 'Billed per Doctor' = DIVIDE([Billed],[Doctors Active])
+		formatString: \$#,0
+		lineageTag: 9018eca3-d7f8-4b51-bb9b-47e0a650012c
+
+	measure 'Billed per Completed Visit' = DIVIDE([Billed Completed],[Completed])
+		formatString: \$#,0
+		lineageTag: cc901303-20bd-4179-b5c1-ba7c7ee42cbf
+
+	measure 'Repeat No-show Patients' = COUNTROWS(FILTER(VALUES(Appointments[patient_id]),[No-shows]>=3))
+		formatString: #,0
+		lineageTag: 6e2c0d92-0f0d-4674-8c71-b4c90e8f61b2
+
+	measure 'Repeat No-show Share' = DIVIDE(SUMX(FILTER(VALUES(Appointments[patient_id]),[No-shows]>=3),[No-shows]),[No-shows])
+		formatString: 0.0%
+		lineageTag: 730222f8-7404-4906-aed0-3058e4bdb3c1
+
+	measure 'Lost Visit Value' = [No-shows]*[Billed per Completed Visit]
+		formatString: \$#,0
+		lineageTag: 558ee93c-d2fc-4047-b16b-fa607a2db119
+
+	measure 'Diagnoses Logged' = COUNTROWS(Diagnoses)
+		formatString: #,0
+		lineageTag: f7d002bd-f34f-49fe-8c54-7e408649031c
+
+	measure 'Diagnosed Patients' = DISTINCTCOUNT(Diagnoses[patient_id])
+		formatString: #,0
+		lineageTag: 32e9a2e6-36c0-4912-a292-165b056deb72
+
+	measure 'Hypertension Patients' = CALCULATE([Diagnosed Patients],Diagnoses[diagnosis_code]="I10")
+		formatString: #,0
+		lineageTag: f25e8669-0027-4dfa-a2b5-8b6af2d6c993
+
+	measure 'Multi-diagnosis Patients' = COUNTROWS(FILTER(VALUES(Diagnoses[patient_id]),CALCULATE(DISTINCTCOUNT(Diagnoses[diagnosis_code]))>1))
+		formatString: #,0
+		lineageTag: 5ba2651b-8d02-4ac1-a391-ef24cacba498
+
+	measure 'Multi-diagnosis Share' = DIVIDE([Multi-diagnosis Patients],[Diagnosed Patients])
+		formatString: 0.0%
+		lineageTag: 3008cda5-2142-4dc2-808e-01d8b880d5e2
+
+	measure Prescriptions = COUNTROWS(Medications)
+		formatString: #,0
+		lineageTag: 010dcf9f-1292-49ee-a428-6a6466d394ae
+
+	measure 'Ongoing Prescriptions' = CALCULATE([Prescriptions],Medications[Rx Status]="Ongoing")
+		formatString: #,0
+		lineageTag: 797cdbbf-f60d-4e97-ab71-97042cb23876
+
+	measure 'Ongoing Share' = DIVIDE([Ongoing Prescriptions],[Prescriptions])
+		formatString: 0.0%
+		lineageTag: 010222bc-ee80-4c33-9d44-7b9b03a161b0
+
+	measure 'Adult Pediatric Visits' = CALCULATE([Appointments],KEEPFILTERS(Doctors[specialty]="Pediatrics"),KEEPFILTERS(Patients[Age]>=18))
+		formatString: #,0
+		lineageTag: e9919f04-398d-42e4-9dc5-4a6fbdb2b4ae
+
+	measure 'Pediatric Visits' = CALCULATE([Appointments],KEEPFILTERS(Doctors[specialty]="Pediatrics"))
+		formatString: #,0
+		lineageTag: 0d1d8ad4-b3d7-4787-93e2-c0b396c8b6d8
+
+	measure 'Adult Pediatric Share' = DIVIDE([Adult Pediatric Visits],[Pediatric Visits])
+		formatString: 0.0%
+		lineageTag: e3cb241e-e549-4227-91fa-861716ad0a9b
+
+	measure 'Bills Under 50% Covered' = COUNTROWS(FILTER(Billing,Billing[insurance_covered]<0.5*Billing[amount]))
+		formatString: #,0
+		lineageTag: d257c98f-5a8f-4a3b-bafe-3eebc29fcb24
+
+	measure 'Low Cover Share' = DIVIDE([Bills Under 50% Covered],[Bills])
+		formatString: 0.0%
+		lineageTag: fbcb0413-1f9c-4f21-83b3-dcf9e0a774c6
+
+	measure 'Bills Not Completed' = CALCULATE([Bills],FILTER(ALL(Billing[Appointment Status]),Billing[Appointment Status]<>"Completed"))
+		formatString: #,0
+		lineageTag: 9df6de1b-f128-4dd4-924c-ed65613a5aab
+
+	measure 'Bills Not Completed Share' = DIVIDE([Bills Not Completed],[Bills])
+		formatString: 0.0%
+		lineageTag: 6d4a8a10-2250-444c-84eb-60c3790ace9a
+
+	measure 'Billed Appointments' = DISTINCTCOUNT(Billing[appointment_id])
+		formatString: #,0
+		lineageTag: 9dfa9c7c-cc20-4323-9fee-58a5acdb1383
+
+	measure 'Extra Bills' = [Bills]-[Billed Appointments]
+		formatString: #,0
+		lineageTag: efe1874d-6a9b-463b-8868-7b061ec2a327
+
+	measure 'Extra Bills Share' = DIVIDE([Extra Bills],[Bills])
+		formatString: 0.0%
+		lineageTag: 044e384b-387b-4857-a476-83f73ea7ce73
+
+	measure 'Completed No Bill' = COUNTROWS(FILTER(CALCULATETABLE(Appointments,KEEPFILTERS(Appointments[status]="Completed")),CALCULATE(COUNTROWS(Billing))=0))
+		formatString: #,0
+		lineageTag: 77214560-9484-470c-8cea-b4f442af25b6
+
+	measure 'Completed No Bill Share' = DIVIDE([Completed No Bill],[Completed])
+		formatString: 0.0%
+		lineageTag: c284a1bd-9e89-4494-a07b-f995b4af6c7e
+
+	measure 'Cut Pct' = SELECTEDVALUE('Sim Cut'[Cut %],20)/100
+		formatString: 0%
+		lineageTag: f508a7fa-ceb8-402c-afdb-8f5946960e79
+
+	measure 'Rebook Pct' = SELECTEDVALUE('Sim Rebook'[Rebook %],0)/100
+		formatString: 0%
+		lineageTag: f9eb38d5-386d-4dcb-8c20-79a8ecd486a4
+
+	measure 'Visits Recovered' = [No-shows]*[Cut Pct]
+		formatString: #,0
+		lineageTag: f93a5c90-d622-4970-bbd6-21e05dc28131
+
+	measure 'Visits Rebooked' = [Cancelled]*[Rebook Pct]
+		formatString: #,0
+		lineageTag: 03d4abb9-217c-4bb6-91a4-d81547077f45
+
+	measure 'Scenario Visits' = [Visits Recovered]+[Visits Rebooked]
+		formatString: #,0
+		lineageTag: 6be22a2a-1020-4c35-b90b-9447cb1b0412
+
+	measure 'Added Billing' = [Scenario Visits]*[Billed per Completed Visit]
+		formatString: \$#,0
+		lineageTag: c010e9a0-4a68-4c27-a605-d364a5f4aca9
+
+	measure 'Scenario Attendance' = DIVIDE([Completed]+[Scenario Visits],[Appointments])
+		formatString: 0.0%
+		lineageTag: 680d3191-12dd-4b7f-9798-c6c828039b2f
+
+	measure 'Scenario Completed Monthly' = [Completed]+[Scenario Visits]
+		formatString: #,0
+		lineageTag: 99880a75-51b0-4731-b11a-eb740890ecaf
+
+	measure 'Scenario Billed Completed' = [Billed Completed]+[Added Billing]
+		formatString: \$#,0
+		lineageTag: 967a8d85-fcae-46fa-9892-9d0daf258ea2
+
+	measure 'Doctor Rank Billed' = RANKX(ALL(Doctors),[Billed])
+		formatString: 0
+		lineageTag: 209788b9-b9b6-4dd6-8128-f689ed4add77
+
+	measure 'Live Insight' = "Only "&FORMAT([Billed Completed],"$#,0")&" of "&FORMAT([Billed],"$#,0")&" billed in this selection is on completed visits. "&FORMAT([No-show Rate],"0.0%")&" of appointments were no-shows."
+		lineageTag: 5b0fbf2b-eb47-44f4-93ef-d83778ea83ee
+
+	measure 'Sim Insight' = "Cutting no-shows by "&FORMAT([Cut Pct],"0%")&" and rebooking "&FORMAT([Rebook Pct],"0%")&" of cancellations adds "&FORMAT([Scenario Visits],"#,0")&" visits, worth about "&FORMAT([Added Billing],"$#,0")&". Attendance moves from "&FORMAT([Attendance Rate],"0.0%")&" to "&FORMAT([Scenario Attendance],"0.0%")&"."
+		lineageTag: 632a3b92-8da2-4e70-8ec8-df7d5355bada
+
+	measure 'Doctor Title' = SELECTEDVALUE(Doctors[doctor_name],"All doctors")&"  |  "&SELECTEDVALUE(Doctors[specialty],"All specialties")&"  |  "&SELECTEDVALUE(Doctors[clinic_location],"All clinics")
+		lineageTag: 5642ca5b-a0b0-4f03-9ce1-faa22c02f705
+
+	column x
+		dataType: int64
+		isHidden
+		lineageTag: b7a932d5-1ea2-4f81-8fdc-c1cd4711c9e1
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [x]
+
+	partition _Measures = calculated
+		mode: import
+		source = ROW("x",0)
+
